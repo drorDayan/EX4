@@ -1,17 +1,25 @@
 from arr2_epec_seg_ex import *
 import random
+import time
 
 
-def get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y):
+def get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
-    for i in range(num_of_points_in_batch):
+    num_of_points_in_dest_direction = random.randint(0, num_of_points_in_batch/5)
+    for i in range(num_of_points_in_batch - num_of_points_in_dest_direction):
         x1 = FT(random.uniform(min_x, max_x))
         y1 = FT(random.uniform(min_y, max_y))
         x2 = FT(random.uniform(min_x, max_x))
         y2 = FT(random.uniform(min_y, max_y))
         v.append(Point_d(4, [x1, y1, x2, y2]))
+    # we should try and steer to goal with some probability
+    for i in range(num_of_points_in_dest_direction):
+        x1 = (FT(random.uniform(min_x, max_x)) + dest_point[0])/FT(2)
+        y1 = (FT(random.uniform(min_y, max_y)) + dest_point[1])/FT(2)
+        x2 = (FT(random.uniform(min_x, max_x)) + dest_point[2])/FT(2)
+        y2 = (FT(random.uniform(min_y, max_y)) + dest_point[3])/FT(2)
+        v.append(Point_d(4, [x1, y1, x2, y2]))
     return v
-
 
 
 def get_min_max(obstacles):
@@ -64,7 +72,6 @@ def get_nearest(tree, new_points, rand):
 
 
 def steer(near, rand, eta):
-    # TODO we should try and steer to goal with some probability
     return Point_d(4, [near[i]+rand[i]*eta/FT(4) for i in range(4)])
 
 
@@ -73,8 +80,17 @@ def collision_free(p1, p2):
     return True
 
 
+def try_connect_to_dest(tree, dest_point):
+    nn = k_nn(tree, 10, dest_point, FT(0))
+    for neighbor in nn:
+        if collision_free(neighbor[0], dest_point):
+            return True
+    return False
+
+
 def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
+    start = time.time()
     # TODO init obs for collision detection
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
     num_of_points_in_batch = 200
@@ -82,22 +98,34 @@ def generate_path(path, robots, obstacles, destination):
     r1x, r1y = get_square_mid(robots[0])
     r2x, r2y = get_square_mid(robots[1])
     start_point = Point_d(4, [r1x, r1y, r2x, r2y])
+    dest_point = Point_d(4, [destination[0].x(), destination[0].y(), destination[1].x(), destination[1].y()])
     vertices = [start_point]
     edges = []
     print(vertices)
     print(edges)
-    batch = get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y)
     tree = Kd_tree(vertices)
-    new_points = []
-    for p in batch:
-        near = get_nearest(tree, new_points, p)
-        print(near)
-        new = steer(near, p, eta)
-        print(new)
-        if collision_free(near, new):
-            new_points.append(new)
-            vertices.append(new)
-            edges.append((near, new))
+    while True:
+        print("new batch, " + "time= " + str(time.time() - start))
+        # I use a batch so that the algorithm can be iterative
+        batch = get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
+        new_points = []
+        for p in batch:
+            near = get_nearest(tree, new_points, p)
+            print(near)
+            new = steer(near, p, eta)
+            print(new)
+            if collision_free(near, new):
+                new_points.append(new)
+                vertices.append(new)
+                # TODO this is not a good way to hold edges should change it after we understand collision detection
+                edges.append((near, new))
+        # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
+        # each double the size of the previous one
+        tree.insert(new_points)
+        if try_connect_to_dest(tree, dest_point):
+            break
+    # TODO create the result (it is possible if we reached this point) use previous exercise bfs
     print(vertices)
     print(edges)
+    print("finished, " + "time= " + str(time.time() - start))
 
