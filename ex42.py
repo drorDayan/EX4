@@ -72,6 +72,7 @@ def get_nearest(tree, new_points, rand):
 
 
 def steer(near, rand, eta):
+    # TODO need to handle rand points closer than eta
     return Point_d(4, [near[i]+rand[i]*eta/FT(4) for i in range(4)])
 
 
@@ -84,6 +85,7 @@ def try_connect_to_dest(tree, dest_point):
     nn = k_nn(tree, 10, dest_point, FT(0))
     for neighbor in nn:
         if collision_free(neighbor[0], dest_point):
+            # TODO add edge
             return True
     return False
 
