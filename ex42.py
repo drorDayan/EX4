@@ -2,6 +2,9 @@ from arr2_epec_seg_ex import *
 import random
 import time
 
+# Configurable Variables: #
+
+k_nearest = 10
 
 def get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
@@ -80,9 +83,8 @@ def collision_free(p1, p2):
     # TODO implement
     return True
 
-
 def try_connect_to_dest(tree, dest_point):
-    nn = k_nn(tree, 10, dest_point, FT(0))
+    nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
         if collision_free(neighbor[0], dest_point):
             # TODO add edge
