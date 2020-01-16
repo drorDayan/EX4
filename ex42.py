@@ -43,6 +43,7 @@ def k_nn(tree, k, query, eps):
     search_nearest = True
     sort_neighbors = True
     # search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
+    # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
     search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
     lst = []
     search.k_neighbors(lst)
