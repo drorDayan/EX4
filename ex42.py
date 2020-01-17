@@ -79,10 +79,12 @@ def steer(near, rand, eta):
     # TODO need to handle rand points closer than eta
     return Point_d(4, [near[i]+rand[i]*eta/FT(4) for i in range(4)])
 
-def between(s,p,f):
-    return (p >= s and p <= f) or (p >= f and p <= s)
 
-def min_dist_between_moving_robots(s1,s2,t1,t2):
+def between(s, p, f):
+    return (s <= p <= f) or (f <= p <= s)
+
+
+def min_dist_between_moving_robots(s1, s2, t1, t2):
     # TODO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
     sx = s1[0]-s2[0]
     sy = s1[1]-s2[1]
@@ -92,26 +94,29 @@ def min_dist_between_moving_robots(s1,s2,t1,t2):
 
     m = dy/dx
     n = (dx*sy-dy*sx)/dx
-    cands = [max(s[0],s[1]),max(d[0],d[1])]
+    cands = [max(s[0], s[1]), max(d[0], d[1])]
     if m != 1:
         t = n/(1-m)
-        if between(sx,t,sx+dx):
+        if between(sx, t, sx+dx):
             cands.append(t)
     if m != -1:
         t = n/(-1-m)
-        if between(sx,t,sx+dx):
+        if between(sx, t, sx+dx):
             cands.append(t)
     return min(cands)
 
-def paths_too_close(start_point,target_point, robot_width)
+
+def paths_too_close(start_point,target_point, robot_width):
     # TODO turn start_point, target_point, which are of type Point_d, into s1,s2,t1,t2 that need to be tuples of 2 floats each.
     #      s1,s2 are the start coordinates of two robots, t1,t2 are the target coordinates
     # TODO support more than 2 robots?
-    return min_dist_between_moving_robots(s1,s2,t1,t2) < robot_width
+    return min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width
+
 
 def collision_free(p1, p2):
     # TODO implement
     return True
+
 
 def try_connect_to_dest(tree, dest_point):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
