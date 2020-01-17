@@ -82,7 +82,7 @@ def steer(near, rand, eta):
 def between(s,p,f):
     return (p >= s and p <= f) or (p >= f and p <= s)
 
-def l_inf_segment_dist(s1,s2,t1,t2):
+def min_dist_between_moving_robots(s1,s2,t1,t2):
     # TODO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
     sx = s1[0]-s2[0]
     sy = s1[1]-s2[1]
@@ -107,7 +107,7 @@ def paths_too_close(start_point,target_point, robot_width)
     # TODO turn start_point, target_point, which are of type Point_d, into s1,s2,t1,t2 that need to be tuples of 2 floats each.
     #      s1,s2 are the start coordinates of two robots, t1,t2 are the target coordinates
     # TODO support more than 2 robots?
-    return l_inf_segment_dist(s1,s2,t1,t2) < robot_width
+    return min_dist_between_moving_robots(s1,s2,t1,t2) < robot_width
 
 def collision_free(p1, p2):
     # TODO implement
