@@ -6,22 +6,24 @@ import time
 
 k_nearest = 10
 
-def get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
+def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points_in_batch/5)
     for i in range(num_of_points_in_batch - num_of_points_in_dest_direction):
-        x1 = FT(random.uniform(min_x, max_x))
-        y1 = FT(random.uniform(min_y, max_y))
-        x2 = FT(random.uniform(min_x, max_x))
-        y2 = FT(random.uniform(min_y, max_y))
-        v.append(Point_d(4, [x1, y1, x2, y2]))
+        # x1 = FT(random.uniform(min_x, max_x))
+        # y1 = FT(random.uniform(min_y, max_y))
+        # x2 = FT(random.uniform(min_x, max_x))
+        # y2 = FT(random.uniform(min_y, max_y))
+        coords = [FT(random.uniform(min_x, max_x)) for i in range(2*robot_num)]
+        v.append(Point_d(2*robot_num, coords))
     # we should try and steer to goal with some probability
     for i in range(num_of_points_in_dest_direction):
-        x1 = (FT(random.uniform(min_x, max_x)) + dest_point[0])/FT(2)
-        y1 = (FT(random.uniform(min_y, max_y)) + dest_point[1])/FT(2)
-        x2 = (FT(random.uniform(min_x, max_x)) + dest_point[2])/FT(2)
-        y2 = (FT(random.uniform(min_y, max_y)) + dest_point[3])/FT(2)
-        v.append(Point_d(4, [x1, y1, x2, y2]))
+        # x1 = (FT(random.uniform(min_x, max_x)) + dest_point[0])/FT(2)
+        # y1 = (FT(random.uniform(min_y, max_y)) + dest_point[1])/FT(2)
+        # x2 = (FT(random.uniform(min_x, max_x)) + dest_point[2])/FT(2)
+        # y2 = (FT(random.uniform(min_y, max_y)) + dest_point[3])/FT(2)
+        coords = [(FT(random.uniform(min_x, max_x)) + dest_point[i])/FT(2)for i in range(2*robot_num)]
+        v.append(Point_d(2*robot_num, coords))
     return v
 
 
@@ -35,8 +37,9 @@ def get_min_max(obstacles):
 
 def get_square_mid(robot):
     x = (robot[0].x()+robot[1].x())/FT(2)
+    # TODO: (dror) aren't those supposed to be 0,1 instead of 1,2 (the line below)
     y = (robot[1].y()+robot[2].y())/FT(2)
-    return x, y
+    return [x, y]
 
 
 def k_nn(tree, k, query, eps):
@@ -57,7 +60,7 @@ def distance(p1, p2):
     return tmp
 
 
-def get_nearest(tree, new_points, rand):
+def get_nearest(robot_num, tree, new_points, rand):
     nn = k_nn(tree, 1, rand, FT(0))
     nn_in_tree = nn[0]
     if len(new_points) == 0:
@@ -75,9 +78,9 @@ def get_nearest(tree, new_points, rand):
     return nn_in_tree[0]
 
 
-def steer(near, rand, eta):
+def steer(robot_num, near, rand, eta):
     # TODO need to handle rand points closer than eta
-    return Point_d(4, [near[i]+rand[i]*eta/FT(4) for i in range(4)])
+    return Point_d(2*robot_num, [near[i]+rand[i]*eta/FT(4) for i in range(2*robot_num)])
 
 
 def between(s, p, f):
@@ -113,15 +116,15 @@ def paths_too_close(start_point,target_point, robot_width):
     return min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width
 
 
-def collision_free(p1, p2):
+def collision_free(robot_num, p1, p2):
     # TODO implement
     return True
 
 
-def try_connect_to_dest(tree, dest_point):
+def try_connect_to_dest(robot_num, tree, dest_point):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        if collision_free(neighbor[0], dest_point):
+        if collision_free(robot_num, neighbor[0], dest_point):
             # TODO add edge
             return True
     return False
@@ -129,15 +132,19 @@ def try_connect_to_dest(tree, dest_point):
 
 def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
+    robot_num = len(robots)
+    assert(len(destination) == robot_num)
     start = time.time()
     # TODO init obs for collision detection
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
     num_of_points_in_batch = 200
     eta = FT(0.5)
-    r1x, r1y = get_square_mid(robots[0])
-    r2x, r2y = get_square_mid(robots[1])
-    start_point = Point_d(4, [r1x, r1y, r2x, r2y])
-    dest_point = Point_d(4, [destination[0].x(), destination[0].y(), destination[1].x(), destination[1].y()])
+    start_ref_points = [get_square_mid(robot) for robot in robots]
+    target_ref_points = [get_square_mid(dest) for dest in destination]
+    #r1x, r1y = get_square_mid(robots[0])
+    #r2x, r2y = get_square_mid(robots[1])
+    start_point = Point_d(2*robot_num, sum(start_ref_points,[]))
+    dest_point = Point_d(2*robot_num, sum(target_ref_points,[]))
     vertices = [start_point]
     edges = []
     print(vertices)
@@ -146,14 +153,14 @@ def generate_path(path, robots, obstacles, destination):
     while True:
         print("new batch, " + "time= " + str(time.time() - start))
         # I use a batch so that the algorithm can be iterative
-        batch = get_batch(num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
+        batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
         new_points = []
         for p in batch:
-            near = get_nearest(tree, new_points, p)
+            near = get_nearest(robot_num, tree, new_points, p)
             print(near)
-            new = steer(near, p, eta)
+            new = steer(robot_num, near, p, eta)
             print(new)
-            if collision_free(near, new):
+            if collision_free(robot_num, near, new):
                 new_points.append(new)
                 vertices.append(new)
                 # TODO this is not a good way to hold edges should change it after we understand collision detection
@@ -161,7 +168,7 @@ def generate_path(path, robots, obstacles, destination):
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
-        if try_connect_to_dest(tree, dest_point):
+        if try_connect_to_dest(robot_num, tree, dest_point):
             break
     # TODO create the result (it is possible if we reached this point) use previous exercise bfs
     print(vertices)
