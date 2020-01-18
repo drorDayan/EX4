@@ -1,12 +1,15 @@
 from arr2_epec_seg_ex import *
 import random
 import time
+from math import sqrt
 
 # Configurable Variables: #
 
 k_nearest = 10
 steer_eta = FT(0.5)
 inflation_epsilon = FT(0.5)
+
+# Code: #
 
 def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
@@ -81,7 +84,7 @@ def get_nearest(robot_num, tree, new_points, rand):
 
 
 def steer(robot_num, near, rand, eta):
-    dist = distance_squared(robot_num, near, rand) ** 0.5
+    dist = sqrt(distance_squared(robot_num, near, rand))
     if dist < eta:
         return rand
     else:
