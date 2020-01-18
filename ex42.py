@@ -81,8 +81,11 @@ def get_nearest(robot_num, tree, new_points, rand):
 
 
 def steer(robot_num, near, rand, eta):
-    # TODO need to handle rand points closer than eta
-    return Point_d(2*robot_num, [near[i]+rand[i]*eta/FT(4) for i in range(2*robot_num)])
+    dist = distance_squared(robot_num, near, rand) ** 0.5
+    if dist < eta:
+        return rand
+    else:
+        return Point_d(2*robot_num, [near[i]+(rand[i]-near[i])*eta/dist for i in range(2*robot_num)])
 
 
 def between(s, p, f):
