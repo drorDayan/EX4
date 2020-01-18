@@ -55,10 +55,10 @@ def k_nn(tree, k, query, eps):
     return lst
 
 
-def distance(robot_num, p1, p2):
+def distance_squared(robot_num, p1, p2):
     tmp = FT(0)
     for i in range(2*robot_num):
-        tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
+        tmp = tmp + (p1[i] - p2[i]) ** 2
     return tmp
 
 
@@ -68,7 +68,7 @@ def get_nearest(robot_num, tree, new_points, rand):
     if len(new_points) == 0:
         return nn_in_tree[0]
     # check distance from new points
-    dist = [distance(robot_num, rand, point) for point in new_points]
+    dist = [distance_squared(robot_num, rand, point) for point in new_points]
     min_dist = dist[0]
     min_i = 0
     for i in range(len(new_points)):
