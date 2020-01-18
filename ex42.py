@@ -5,6 +5,8 @@ import time
 # Configurable Variables: #
 
 k_nearest = 10
+steer_eta = FT(0.5)
+inflation_epsilon = FT(0.5)
 
 def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
@@ -53,9 +55,9 @@ def k_nn(tree, k, query, eps):
     return lst
 
 
-def distance(p1, p2):
+def distance(robot_num, p1, p2):
     tmp = FT(0)
-    for i in range(4):
+    for i in range(2*robot_num):
         tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
     return tmp
 
@@ -66,7 +68,7 @@ def get_nearest(robot_num, tree, new_points, rand):
     if len(new_points) == 0:
         return nn_in_tree[0]
     # check distance from new points
-    dist = [distance(rand, point) for point in new_points]
+    dist = [distance(robot_num, rand, point) for point in new_points]
     min_dist = dist[0]
     min_i = 0
     for i in range(len(new_points)):
@@ -138,7 +140,7 @@ def generate_path(path, robots, obstacles, destination):
     # TODO init obs for collision detection
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
     num_of_points_in_batch = 200
-    eta = FT(0.5)
+    # eta = FT(0.5)
     start_ref_points = [get_square_mid(robot) for robot in robots]
     target_ref_points = [get_square_mid(dest) for dest in destination]
     #r1x, r1y = get_square_mid(robots[0])
@@ -158,7 +160,7 @@ def generate_path(path, robots, obstacles, destination):
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
             print(near)
-            new = steer(robot_num, near, p, eta)
+            new = steer(robot_num, near, p, steer_eta)
             print(new)
             if collision_free(robot_num, near, new):
                 new_points.append(new)
