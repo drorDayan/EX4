@@ -118,18 +118,29 @@ def paths_too_close(start_point,target_point, robot_width):
     return min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width
 
 
-def collision_free(robot_num, p1, p2):
+def path_collision_free(arrangement, robot_num, p1, p2):
+    max_robot_path_len = FT(0)
     for i in range(robot_num):
-        return True
-        # TODO check robot i
-    # TODO check robot i and and j for colision
+        robot_path_len = (p2[2*robot_num]-p1[2*robot_num])*(p2[2*robot_num]-p1[2*robot_num])+\
+                         (p2[2*robot_num+1]-p1[2*robot_num+1])*(p2[2*robot_num+1]-p1[2*robot_num+1])
+        if robot_path_len > max_robot_path_len:
+            max_robot_path_len = robot_path_len
+    sample_amount = 1 + sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double()
+    diff_vec = [(p2[i]-p1[i])*(p2[i]-p1[i])/sample_amount for i in range(2*robot_num)]
+    curr = [p1[i] for i in range(2*robot_num)]
+    for i in range(sample_amount):
+        for j in range(robot_num):
+            if is_in_free_face(arrangement, Point_2(curr[2*robot_num], curr[2*robot_num+1])):
+                return False
+        # TODO check robot j and and k for collision
+        curr = [sum(x) for x in zip(curr, diff_vec)]
     return True
 
 
-def try_connect_to_dest(robot_num, tree, dest_point):
+def try_connect_to_dest(arrangement, robot_num, tree, dest_point):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        if collision_free(robot_num, neighbor[0], dest_point):
+        if path_collision_free(arrangement, robot_num, neighbor[0], dest_point):
             # TODO add edge
             return True
     return False
@@ -176,6 +187,19 @@ def overlay_multiple_arrangements(arrs, face_merge_func):
     return final_arr
 
 
+def is_in_free_face(arrangement, point):
+    face = Face()
+    # locate can return a vertex or an edge or a face
+    located_obj = locate(arrangement, point)
+    if located_obj.is_vertex():
+        return False
+    if located_obj.is_halfedge():
+        return False
+    if located_obj.is_face():
+        located_obj.get_face(face)
+    return face.data()[FREESPACE]
+
+
 def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
     # TODO make sure square is unit square
@@ -214,7 +238,7 @@ def generate_path(path, robots, obstacles, destination):
             print(near)
             new = steer(robot_num, near, p, steer_eta)
             print(new)
-            if collision_free(robot_num, near, new):
+            if path_collision_free(single_arrangement, robot_num, near, new):
                 new_points.append(new)
                 vertices.append(new)
                 # TODO this is not a good way to hold edges should change it after we understand collision detection
@@ -222,7 +246,7 @@ def generate_path(path, robots, obstacles, destination):
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
-        if try_connect_to_dest(robot_num, tree, dest_point):
+        if try_connect_to_dest(single_arrangement, robot_num, tree, dest_point):
             break
     # TODO create the result (it is possible if we reached this point) use previous exercise bfs
     print(vertices)
