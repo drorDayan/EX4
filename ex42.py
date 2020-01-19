@@ -311,8 +311,11 @@ def generate_path(path, robots, obstacles, destination):
     # TODO create the result (it is possible if we reached this point) use previous exercise bfs
     dijk_path = dijkstra(graph, start_point, dest_point)
     if len(dijk_path) > 0:
-        print("We win")
-        pass
+        for pd in dijk_path:
+            next_conf = []
+            for i in range(robot_num):
+                next_conf.append(Point_2(pd[2*i],pd[2*i+1]))
+            path.append(next_conf)
     print(vertices)
     print("finished, " + "time= " + str(time.time() - start))
 
