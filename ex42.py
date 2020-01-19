@@ -7,26 +7,20 @@ from math import sqrt
 
 k_nearest = 10
 steer_eta = FT(0.5)
-inflation_epsilon = FT(0.5)
+inflation_epsilon = FT(1)
+FREESPACE = 'freespace'
 
 # Code: #
+
 
 def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points_in_batch/5)
     for i in range(num_of_points_in_batch - num_of_points_in_dest_direction):
-        # x1 = FT(random.uniform(min_x, max_x))
-        # y1 = FT(random.uniform(min_y, max_y))
-        # x2 = FT(random.uniform(min_x, max_x))
-        # y2 = FT(random.uniform(min_y, max_y))
         coords = [FT(random.uniform(min_x, max_x)) for i in range(2*robot_num)]
         v.append(Point_d(2*robot_num, coords))
     # we should try and steer to goal with some probability
     for i in range(num_of_points_in_dest_direction):
-        # x1 = (FT(random.uniform(min_x, max_x)) + dest_point[0])/FT(2)
-        # y1 = (FT(random.uniform(min_y, max_y)) + dest_point[1])/FT(2)
-        # x2 = (FT(random.uniform(min_x, max_x)) + dest_point[2])/FT(2)
-        # y2 = (FT(random.uniform(min_y, max_y)) + dest_point[3])/FT(2)
         coords = [(FT(random.uniform(min_x, max_x)) + dest_point[i])/FT(2)for i in range(2*robot_num)]
         v.append(Point_d(2*robot_num, coords))
     return v
@@ -61,7 +55,7 @@ def k_nn(tree, k, query, eps):
 def distance_squared(robot_num, p1, p2):
     tmp = FT(0)
     for i in range(2*robot_num):
-        tmp = tmp + (p1[i] - p2[i]) ** 2
+        tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
     return tmp
 
 
@@ -84,7 +78,7 @@ def get_nearest(robot_num, tree, new_points, rand):
 
 
 def steer(robot_num, near, rand, eta):
-    dist = sqrt(distance_squared(robot_num, near, rand))
+    dist = FT(sqrt(distance_squared(robot_num, near, rand).to_double()))
     if dist < eta:
         return rand
     else:
@@ -125,7 +119,10 @@ def paths_too_close(start_point,target_point, robot_width):
 
 
 def collision_free(robot_num, p1, p2):
-    # TODO implement
+    for i in range(robot_num):
+        return True
+        # TODO check robot i
+    # TODO check robot i and and j for colision
     return True
 
 
@@ -138,21 +135,70 @@ def try_connect_to_dest(robot_num, tree, dest_point):
     return False
 
 
+def polygon_with_holes_to_arrangement(poly):
+    assert isinstance(poly, Polygon_with_holes_2)
+    arr = Arrangement_2()
+    insert(arr, [Curve_2(e) for e in poly.outer_boundary().edges()])
+
+    # set the freespace flag for the only current two faces
+    for f in arr.faces():
+        assert isinstance(f, Face)
+        f.set_data({FREESPACE: f.is_unbounded()})
+
+    # TODO: test this with a complex polygon
+    for hole in poly.holes():
+        insert(arr, [Curve_2(e) for e in hole.edges()])
+
+    for f in arr.faces():
+        assert isinstance(f, Face)
+        if f.data() is None:
+            f.set_data({FREESPACE: True})
+    return arr
+
+
+def merge_faces_by_freespace_flag(x, y):
+    return {FREESPACE: x[FREESPACE] and y[FREESPACE]}
+
+
+def overlay_multiple_arrangements(arrs, face_merge_func):
+    # def empty(x, y):
+    #     return None
+    #
+    # traits = Arr_overlay_traits(empty, empty, empty, empty, empty, empty, empty, empty, empty, face_merge_func)
+
+    final_arr = arrs[0]
+    for arr in arrs[1:]:
+        temp_res = Arrangement_2()
+
+        overlay(final_arr, arr, temp_res, Arr_face_overlay_traits(face_merge_func))
+        # overlay(final_arr, arr, temp_res, traits)
+        final_arr = temp_res
+    return final_arr
+
+
 def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
+    # TODO make sure square is unit square
     robot_num = len(robots)
     assert(len(destination) == robot_num)
     start = time.time()
-    # TODO init obs for collision detection
+    # init obs for collision detection
+    v1 = Point_2(FT(1/2)+inflation_epsilon/FT(2), FT(1/2)+inflation_epsilon/FT(2))
+    v2 = Point_2(FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)), FT(1/2)+inflation_epsilon/FT(2))
+    v3 = Point_2(FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)), FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)))
+    v4 = Point_2((FT(1/2)+inflation_epsilon/FT(2)), FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)))
+    inflated_square = Polygon_2([v1, v2, v3, v4])
+    cgal_obstacles = [Polygon_2([p for p in obs]) for obs in obstacles]
+    c_space_obstacles = [minkowski_sum_by_full_convolution_2(inflated_square, obs) for obs in cgal_obstacles]
+    c_space_arrangements = [polygon_with_holes_to_arrangement(obs) for obs in c_space_obstacles]
+    single_arrangement = overlay_multiple_arrangements(c_space_arrangements, merge_faces_by_freespace_flag)
+
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
     num_of_points_in_batch = 200
-    # eta = FT(0.5)
     start_ref_points = [get_square_mid(robot) for robot in robots]
-    target_ref_points = [get_square_mid(dest) for dest in destination]
-    #r1x, r1y = get_square_mid(robots[0])
-    #r2x, r2y = get_square_mid(robots[1])
-    start_point = Point_d(2*robot_num, sum(start_ref_points,[]))
-    dest_point = Point_d(2*robot_num, sum(target_ref_points,[]))
+    target_ref_points = [[dest.x(), dest.y()] for dest in destination]
+    start_point = Point_d(2*robot_num, sum(start_ref_points, []))
+    dest_point = Point_d(2*robot_num, sum(target_ref_points, []))
     vertices = [start_point]
     edges = []
     print(vertices)
