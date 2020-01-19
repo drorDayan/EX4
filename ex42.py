@@ -2,14 +2,14 @@ from arr2_epec_seg_ex import *
 import random
 import time
 from math import sqrt
-
+from collections import defaultdict
 # Configurable Variables: #
 
 k_nearest = 10
-steer_eta = FT(0.5)
+steer_eta = FT(1)
 inflation_epsilon = FT(1)
 FREESPACE = 'freespace'
-num_of_points_in_batch = 200
+num_of_points_in_batch = 2000
 
 # Code: #
 ##############################################################################################################################
@@ -177,19 +177,19 @@ def paths_too_close(start_point,target_point, robot_width):
 def path_collision_free(arrangement, robot_num, p1, p2):
     max_robot_path_len = FT(0)
     for i in range(robot_num):
-        robot_path_len = (p2[2*robot_num]-p1[2*robot_num])*(p2[2*robot_num]-p1[2*robot_num])+\
-                         (p2[2*robot_num+1]-p1[2*robot_num+1])*(p2[2*robot_num+1]-p1[2*robot_num+1])
+        robot_path_len = (p2[2*i]-p1[2*i])*(p2[2*i]-p1[2*i])+\
+                         (p2[2*i+1]-p1[2*i+1])*(p2[2*i+1]-p1[2*i+1])
         if robot_path_len > max_robot_path_len:
             max_robot_path_len = robot_path_len
-    sample_amount = 1 + sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double()
+    sample_amount = FT(sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double())
     diff_vec = [(p2[i]-p1[i])*(p2[i]-p1[i])/sample_amount for i in range(2*robot_num)]
     curr = [p1[i] for i in range(2*robot_num)]
-    for i in range(sample_amount):
+    for i in range(int(sample_amount.to_double())+1):
         for j in range(robot_num):
-            if is_in_free_face(arrangement, Point_2(curr[2*robot_num], curr[2*robot_num+1])):
+            if not is_in_free_face(arrangement, Point_2(curr[2*j], curr[2*j+1])):
                 return False
         # TODO check robot j and and k for collision
-        curr = [sum(x) for x in zip(curr, diff_vec)]
+        curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
     return True
 
 
@@ -243,6 +243,12 @@ def overlay_multiple_arrangements(arrs, face_merge_func):
     return final_arr
 
 
+def locate(arr, point):
+    assert isinstance(arr, Arrangement_2)
+    assert isinstance(point, Point_2)
+    return Arr_naive_point_location(arr).locate(point)
+
+
 def is_in_free_face(arrangement, point):
     face = Face()
     # locate can return a vertex or an edge or a face
@@ -289,14 +295,14 @@ def generate_path(path, robots, obstacles, destination):
         new_points = []
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
-            print(near)
+            # print(near)
             new = steer(robot_num, near, p, steer_eta)
-            print(new)
+            # print(new)
             if path_collision_free(single_arrangement, robot_num, near, new):
                 new_points.append(new)
                 vertices.append(new)
                 # TODO this is not a good way to hold edges should change it after we understand collision detection
-                graph.add_edge(near,new,1) # TODO more useful weight?
+                graph.add_edge(near, new, 1)  # TODO more useful weight?
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
@@ -304,7 +310,8 @@ def generate_path(path, robots, obstacles, destination):
             break
     # TODO create the result (it is possible if we reached this point) use previous exercise bfs
     dijk_path = dijkstra(graph, start_point, dest_point)
-    if len(dijkstra) > 0:
+    if len(dijk_path) > 0:
+        print("We win")
         pass
     print(vertices)
     print("finished, " + "time= " + str(time.time() - start))
