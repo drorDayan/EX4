@@ -3,71 +3,33 @@ import random
 import time
 from math import sqrt
 from collections import defaultdict
+
+
 # Configurable Variables: #
 
+
 k_nearest = 10
-steer_eta = FT(0.4)
+steer_eta = FT(1)
 inflation_epsilon = FT(0.05)
 FREESPACE = 'freespace'
 num_of_points_in_batch = 2000
 
-# Code: #
-##############################################################################################################################
-#Graph and Dijkstra's algorythm impplementation borrowed from benalexkeen.com:
-class Graph():
-    def __init__(self):
-        """
-        self.edges is a dict of all possible next nodes
-        e.g. {'X': ['A', 'B', 'C', 'E'], ...}
-        self.weights has all the weights between two nodes,
-        with the two nodes as a tuple as the key
-        e.g. {('X', 'A'): 7, ('X', 'B'): 2, ...}
-        """
-        self.edges = defaultdict(list)
-        self.weights = {}
-    
-    def add_edge(self, from_node, to_node, weight):
-        # Note: assumes edges are bi-directional
-        self.edges[from_node].append(to_node)
-        self.edges[to_node].append(from_node)
-        self.weights[(from_node, to_node)] = weight
-        self.weights[(to_node, from_node)] = weight
-def dijkstra(graph, initial, end):
-    # shortest paths is a dict of nodes
-    # whose value is a tuple of (previous node, weight)
-    shortest_paths = {initial: (None, 0)}
-    current_node = initial
-    visited = set()
-    
-    while current_node != end:
-        visited.add(current_node)
-        destinations = graph.edges[current_node]
-        weight_to_current_node = shortest_paths[current_node][1]
 
-        for next_node in destinations:
-            weight = graph.weights[(current_node, next_node)] + weight_to_current_node
-            if next_node not in shortest_paths:
-                shortest_paths[next_node] = (current_node, weight)
-            else:
-                current_shortest_weight = shortest_paths[next_node][1]
-                if current_shortest_weight > weight:
-                    shortest_paths[next_node] = (current_node, weight)
-        next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
-        if not next_destinations:
-            return []
-        # next node is the destination with the lowest weight
-        current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
-    
-    # Work back through destinations in shortest path
-    path = []
-    while current_node is not None:
-        path.append(current_node)
-        next_node = shortest_paths[current_node][0]
-        current_node = next_node
-    # Reverse path
-    path = path[::-1]
-    return path
-##############################################################################################################################
+# Code: #
+
+
+class RRT_Node():
+    def __init__(self, pt, pr = None, n = 0):
+        self.point = pt
+        self.parent = pr
+        self.nval = n # Will be used to store distance to this point, etc.
+    def get_path_to_here(self, ret_path):
+        cur = self
+        while cur != None:
+            ret_path.insert(0, cur.point)# what is that? we need two Point_2 here
+            cur = cur.parent
+        return ret_path
+
 
 
 # The following function returns the transformed distance between two points
@@ -259,7 +221,7 @@ def between(s, p, f):
 
 
 def min_dist_between_moving_robots(s1, s2, t1, t2):
-    # TODO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
+    # 2DO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
     sx = s1[0]-s2[0]
     sy = s1[1]-s2[1]
 
@@ -280,11 +242,17 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
     return min(cands)
 
 
-def paths_too_close(start_point,target_point, robot_width):
-    # TODO turn start_point, target_point, which are of type Point_d, into s1,s2,t1,t2 that need to be tuples of 2 floats each.
-    #      s1,s2 are the start coordinates of two robots, t1,t2 are the target coordinates
-    # TODO support more than 2 robots?
-    return min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width
+def paths_too_close(start_point, target_point, robot_width):
+    # TODO Integrate this instead of the current "many polls" method we use to determine if paths are colliding with eachother.
+    for i in range(robot_width):
+        s1 = Point_2(start_point[2*i], start_point[2*i+1])
+        t1 = Point_2(target_point[2*i], target_point[2*i+1])
+        for j in range(i+1, robot_width):
+            s2 = Point_2(start_point[2*j], start_point[2*j+1])
+            t2 = Point_2(target_point[2*j], target_point[2*j+1])
+            if min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width:
+                return True
+    return False
 
 
 def path_collision_free(arrangement, robot_num, p1, p2):
@@ -294,8 +262,8 @@ def path_collision_free(arrangement, robot_num, p1, p2):
                          (p2[2*i+1]-p1[2*i+1])*(p2[2*i+1]-p1[2*i+1])
         if robot_path_len > max_robot_path_len:
             max_robot_path_len = robot_path_len
-    sample_amount = FT(2)*FT(sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double())
-    diff_vec = [((p2[i]-p1[i])*(p2[i]-p1[i])/sample_amount) for i in range(2*robot_num)]
+    sample_amount = FT(2)*FT(sqrt(max_robot_path_len.to_double()))/inflation_epsilon
+    diff_vec = [((p2[i]-p1[i])/sample_amount) for i in range(2*robot_num)]
     curr = [p1[i] for i in range(2*robot_num)]
     for i in range(int(sample_amount.to_double())+1):
         for j in range(robot_num):
@@ -313,7 +281,8 @@ def try_connect_to_dest(graph, arrangement, robot_num, tree, dest_point):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
         if path_collision_free(arrangement, robot_num, neighbor[0], dest_point):
-            graph.add_edge(neighbor[0], dest_point, 1) # TODO more useful weight?
+            graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
+            # graph.add_edge(neighbor[0], dest_point, 1) # TODO more useful weight?
             return True
     return False
 
@@ -409,7 +378,8 @@ def generate_path(path, robots, obstacles, destination):
     dest_point = Point_d(2*robot_num, sum(target_ref_points, []))
     vertices = [start_point]
     print(vertices)
-    graph = Graph()
+    # graph = Graph()
+    graph = {start_point:RRT_Node(start_point)}
     tree = Kd_tree(vertices)
     while True:
         print("new batch, " + "time= " + str(time.time() - start))
@@ -426,21 +396,26 @@ def generate_path(path, robots, obstacles, destination):
                 # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[0], new[1])), Qt.red)
                 # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[2], new[3])), Qt.black)
                 vertices.append(new)
-                graph.add_edge(near, new, 1)  # TODO more useful weight?
+                # TODO this is not a good way to hold edges should change it after we understand collision detection
+                #graph.add_edge(near, new, 1)  # TODO more useful weight?
+                graph[new] = RRT_Node(new, graph[near])
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
         print("vertices amount: "+str(len(vertices)))
         if try_connect_to_dest(graph, single_arrangement, robot_num, tree, dest_point):
             break
-    # TODO create the result (it is possible if we reached this point) use previous exercise bfs
-    dijk_path = dijkstra(graph, start_point, dest_point)
-    if len(dijk_path) > 0:
-        for pd in dijk_path:
-            next_conf = []
-            for i in range(robot_num):
-                next_conf.append(Point_2(pd[2*i], pd[2*i+1]))
-            path.append(next_conf)
+    dpath = []
+    graph[dest_point].get_path_to_here(dpath)
+    for dp in dpath:
+        path.append([Point_2(dp[2*i],dp[2*i+1]) for i in range(robot_num)])
+    # dijk_path = dijkstra(graph, start_point, dest_point)
+    # if len(dijk_path) > 0:
+    #     for pd in dijk_path:
+    #         next_conf = []
+    #         for i in range(robot_num):
+    #             next_conf.append(Point_2(pd[2*i],pd[2*i+1]))
+    #         path.append(next_conf)
     print(vertices)
     print("finished, " + "time= " + str(time.time() - start))
 
