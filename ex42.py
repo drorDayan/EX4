@@ -255,7 +255,20 @@ def paths_too_close(start_point, target_point, robot_width):
     return False
 
 
+def is_valid_config(arrangement, conf, robot_num):
+    for j in range(robot_num):
+        if not is_in_free_face(arrangement, Point_2(conf[2*j], conf[2*j+1])):
+            return False
+        for k in range(j + 1, robot_num):
+            if abs(FT.to_double(conf[2*j] - conf[2*k])) < 1+inflation_epsilon.to_double() and \
+                    abs(FT.to_double(conf[2*j+1] - conf[2*k+1])) < 1+inflation_epsilon.to_double():
+                return False
+    return True
+
+
 def path_collision_free(arrangement, robot_num, p1, p2):
+    if not is_valid_config(arrangement, p2, robot_num):
+        return False
     max_robot_path_len = FT(0)
     for i in range(robot_num):
         robot_path_len = (p2[2*i]-p1[2*i])*(p2[2*i]-p1[2*i])+\
@@ -267,13 +280,8 @@ def path_collision_free(arrangement, robot_num, p1, p2):
     curr = [p1[i] for i in range(2*robot_num)]
     for i in range(int(sample_amount.to_double())):
         curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
-        for j in range(robot_num):
-            if not is_in_free_face(arrangement, Point_2(curr[2*j], curr[2*j+1])):
-                return False
-            for k in range(j + 1, robot_num):
-                if abs(FT.to_double(curr[2*j] - curr[2*k])) < 1+inflation_epsilon.to_double() and \
-                        abs(FT.to_double(curr[2*j+1] - curr[2*k+1])) < 1+inflation_epsilon.to_double():
-                    return False
+        if not is_valid_config(arrangement, curr, robot_num):
+            return False
     return True
 
 
