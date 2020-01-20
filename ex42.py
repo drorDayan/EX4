@@ -8,12 +8,12 @@ from collections import defaultdict
 # Configurable Variables: #
 
 
-k_nearest = 10
-steer_eta = FT(1)
-inflation_epsilon = FT(0.05)
+k_nearest = 50
+steer_eta = FT(0.5)
+inflation_epsilon = FT(0.02)
 FREESPACE = 'freespace'
 num_of_points_in_batch = 1000
-
+use_single_robot_movement = True
 
 # Code: #
 
@@ -401,12 +401,20 @@ def generate_path(path, robots, obstacles, destination):
             # print(new)
             if path_collision_free(single_arrangement, robot_num, near, new):
                 new_points.append(new)
-                # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[0], new[1])), Qt.red)
-                # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[2], new[3])), Qt.black)
                 vertices.append(new)
-                # TODO this is not a good way to hold edges should change it after we understand collision detection
-                #graph.add_edge(near, new, 1)  # TODO more useful weight?
                 graph[new] = RRT_Node(new, graph[near])
+            elif use_single_robot_movement:
+                for i in range(robot_num):
+                    new_data = [near[j] for j in range(2*i-1)]
+                    new_data.append(new[2 * i])
+                    new_data.append(new[2 * i + 1])
+                    new_data = new_data + [near[j] for j in range(2 * i + 2, 2*robot_num)]
+                    my_new = Point_d(2*robot_num, new_data)
+                    if path_collision_free(single_arrangement, robot_num, near, my_new):
+                        new_points.append(my_new)
+                        vertices.append(my_new)
+                        graph[my_new] = RRT_Node(my_new, graph[near])
+
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
