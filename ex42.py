@@ -6,8 +6,8 @@ from collections import defaultdict
 # Configurable Variables: #
 
 k_nearest = 10
-steer_eta = FT(1)
-inflation_epsilon = FT(1)
+steer_eta = FT(0.4)
+inflation_epsilon = FT(0.05)
 FREESPACE = 'freespace'
 num_of_points_in_batch = 2000
 
@@ -69,6 +69,114 @@ def dijkstra(graph, initial, end):
     return path
 ##############################################################################################################################
 
+
+# The following function returns the transformed distance between two points
+# (for the squared Euclidean distance the transformed distance is the squared distance)
+def transformed_distance(p1, p2):
+    # TODO make it work for k
+    return max((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1]),
+               (p1[2]-p2[2])*(p1[2]-p2[2])+(p1[3]-p2[3])*(p1[3]-p2[3]))
+
+
+# The following function returns the transformed distance between the query
+# point q and the point on the boundary of the rectangle r closest to q.
+def min_distance_to_rectangle(q, r):
+    min_coord_x = r.min_coord(0)
+    min_coord_y = r.min_coord(1)
+    min_coord_x1 = r.min_coord(2)
+    min_coord_y1 = r.min_coord(3)
+    max_coord_x = r.max_coord(0)
+    max_coord_y = r.max_coord(1)
+    max_coord_x1 = r.max_coord(2)
+    max_coord_y1 = r.max_coord(3)
+    x0 = q[0]
+    y0 = q[1]
+    x1 = q[2]
+    y1 = q[3]
+    if x0 < min_coord_x:
+        x0_diff = min_coord_x - x0
+    elif x0 > max_coord_x:
+        x0_diff = x0 - max_coord_x
+    else:
+        x0_diff = FT(0)
+    if y0 < min_coord_y:
+        y0_diff = min_coord_y - y0
+    elif y0 > max_coord_y:
+        y0_diff = y0 - max_coord_y
+    else:
+        y0_diff = FT(0)
+    if x1 < min_coord_x1:
+        x1_diff = min_coord_x1 - x1
+    elif x1 > max_coord_x1:
+        x1_diff = x1 - max_coord_x1
+    else:
+        x1_diff = FT(0)
+    if y1 < min_coord_y1:
+        y1_diff = min_coord_y1 - y1
+    elif y1 > max_coord_y1:
+        y1_diff = y1 - max_coord_y1
+    else:
+        y1_diff = FT(0)
+    return min(x0_diff*x0_diff+y0_diff*y0_diff,
+               x1_diff * x1_diff + y1_diff * y1_diff)
+
+
+# The following function returns the transformed distance between the query
+# point q and the point on the boundary of the rectangle r furthest to q.
+# (For k-nearest search you may leave the following implementation)
+def max_distance_to_rectangle(q, r):
+    min_coord_x = r.min_coord(0)
+    min_coord_y = r.min_coord(1)
+    min_coord_x1 = r.min_coord(2)
+    min_coord_y1 = r.min_coord(3)
+    max_coord_x = r.max_coord(0)
+    max_coord_y = r.max_coord(1)
+    max_coord_x1 = r.max_coord(2)
+    max_coord_y1 = r.max_coord(3)
+    x0 = q[0]
+    y0 = q[1]
+    x1 = q[2]
+    y1 = q[3]
+    if x0 < min_coord_x:
+        x0_diff = min_coord_x - x0
+    elif x0 > max_coord_x:
+        x0_diff = x0 - max_coord_x
+    else:
+        x0_diff = FT(0)
+    if y0 < min_coord_y:
+        y0_diff = min_coord_y - y0
+    elif y0 > max_coord_y:
+        y0_diff = y0 - max_coord_y
+    else:
+        y0_diff = FT(0)
+    if x1 < min_coord_x1:
+        x1_diff = min_coord_x1 - x1
+    elif x1 > max_coord_x1:
+        x1_diff = x1 - max_coord_x1
+    else:
+        x1_diff = FT(0)
+    if y1 < min_coord_y1:
+        y1_diff = min_coord_y1 - y1
+    elif y1 > max_coord_y1:
+        y1_diff = y1 - max_coord_y1
+    else:
+        y1_diff = FT(0)
+    return max(x0_diff*x0_diff+y0_diff*y0_diff,
+               x1_diff * x1_diff + y1_diff * y1_diff)
+
+
+# The following function returns the transformed distance for a value d (a number)
+# Fo example, if d is a value computed using the Euclidean distance, the transformed distance should be d*d
+def transformed_distance_for_value(d):
+    return d*d  # replace this with your implementation
+
+
+# The following function returns the inverse of the transformed distance for a value d (a number)
+# Fo example, if d is a sqaured distance value then its inverse should be sqrt(d)
+def inverse_of_transformed_distance_for_value(d):
+    return sqrt(d)  # replace this with your implementation
+
+
 def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points_in_batch/5)
@@ -102,6 +210,10 @@ def k_nn(tree, k, query, eps):
     sort_neighbors = True
     # search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
     # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
+    my_distance = Distance_python(transformed_distance, min_distance_to_rectangle, \
+                               max_distance_to_rectangle, transformed_distance_for_value, \
+                               inverse_of_transformed_distance_for_value)
+    # search = K_neighbor_search_python(tree, query, k, eps, search_nearest, my_distance, sort_neighbors)
     search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
     lst = []
     search.k_neighbors(lst)
@@ -109,6 +221,7 @@ def k_nn(tree, k, query, eps):
 
 
 def distance_squared(robot_num, p1, p2):
+    # return transformed_distance(p1, p2)
     tmp = FT(0)
     for i in range(2*robot_num):
         tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
@@ -181,14 +294,17 @@ def path_collision_free(arrangement, robot_num, p1, p2):
                          (p2[2*i+1]-p1[2*i+1])*(p2[2*i+1]-p1[2*i+1])
         if robot_path_len > max_robot_path_len:
             max_robot_path_len = robot_path_len
-    sample_amount = FT(sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double())
-    diff_vec = [(p2[i]-p1[i])*(p2[i]-p1[i])/sample_amount for i in range(2*robot_num)]
+    sample_amount = FT(2)*FT(sqrt(max_robot_path_len.to_double())/inflation_epsilon.to_double())
+    diff_vec = [((p2[i]-p1[i])*(p2[i]-p1[i])/sample_amount) for i in range(2*robot_num)]
     curr = [p1[i] for i in range(2*robot_num)]
     for i in range(int(sample_amount.to_double())+1):
         for j in range(robot_num):
             if not is_in_free_face(arrangement, Point_2(curr[2*j], curr[2*j+1])):
                 return False
-        # TODO check robot j and and k for collision
+            for k in range(j + 1, robot_num):
+                if abs(FT.to_double(curr[2*j] - curr[2*k])) < 1+inflation_epsilon.to_double() and \
+                        abs(FT.to_double(curr[2*j+1] - curr[2*k+1])) < 1+inflation_epsilon.to_double():
+                    return False
         curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
     return True
 
@@ -262,7 +378,14 @@ def is_in_free_face(arrangement, point):
     return face.data()[FREESPACE]
 
 
-def generate_path(path, robots, obstacles, destination):
+def point_2_to_xy(p):
+  return (p.x().to_double(), p.y().to_double())
+
+
+from gui.gui import GUI, QtCore, QtGui, QtWidgets, Qt, QPointF
+
+
+def generate_path(path, robots, obstacles, destination, gui):
     print(path, robots, obstacles, destination)
     # TODO make sure square is unit square
     robot_num = len(robots)
@@ -300,12 +423,14 @@ def generate_path(path, robots, obstacles, destination):
             # print(new)
             if path_collision_free(single_arrangement, robot_num, near, new):
                 new_points.append(new)
+                # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[0], new[1])), Qt.red)
+                # gui.add_disc(0.05, *point_2_to_xy(Point_2(new[2], new[3])), Qt.black)
                 vertices.append(new)
-                # TODO this is not a good way to hold edges should change it after we understand collision detection
                 graph.add_edge(near, new, 1)  # TODO more useful weight?
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
+        print("vertices amount: "+str(len(vertices)))
         if try_connect_to_dest(graph, single_arrangement, robot_num, tree, dest_point):
             break
     # TODO create the result (it is possible if we reached this point) use previous exercise bfs
@@ -314,7 +439,7 @@ def generate_path(path, robots, obstacles, destination):
         for pd in dijk_path:
             next_conf = []
             for i in range(robot_num):
-                next_conf.append(Point_2(pd[2*i],pd[2*i+1]))
+                next_conf.append(Point_2(pd[2*i], pd[2*i+1]))
             path.append(next_conf)
     print(vertices)
     print("finished, " + "time= " + str(time.time() - start))
