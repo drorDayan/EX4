@@ -68,16 +68,16 @@ def dijkstra(graph, initial, end):
     path = path[::-1]
     return path
 class RRT_Node():
-	def __init__(self, pt, pr = None, n = 0):
-		self.point = pt
-		self.parent = pr
-		self.nval = n # Will be used to store distance to this point, etc.
-	def get_path_to_here(self, ret_path):
-		cur = self
-		while cur != None:
-			ret_path.insert(0,cur.point)
-			cur = cur.parent
-		return ret_path
+    def __init__(self, pt, pr = None, n = 0):
+        self.point = pt
+        self.parent = pr
+        self.nval = n # Will be used to store distance to this point, etc.
+    def get_path_to_here(self, ret_path):
+        cur = self
+        while cur != None:
+            ret_path.insert(0,cur.point)
+            cur = cur.parent
+        return ret_path
 
 
 ##############################################################################################################################
@@ -159,7 +159,7 @@ def between(s, p, f):
 
 
 def min_dist_between_moving_robots(s1, s2, t1, t2):
-    # TODO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
+    # 2DO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
     sx = s1[0]-s2[0]
     sy = s1[1]-s2[1]
 
@@ -180,11 +180,17 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
     return min(cands)
 
 
-def paths_too_close(start_point,target_point, robot_width):
-    # TODO turn start_point, target_point, which are of type Point_d, into s1,s2,t1,t2 that need to be tuples of 2 floats each.
-    #      s1,s2 are the start coordinates of two robots, t1,t2 are the target coordinates
-    # TODO support more than 2 robots?
-    return min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width
+def paths_too_close(start_point, target_point, robot_width):
+    # TODO Integrate this instead of the current "many polls" method we use to determine if paths are colliding with eachother.
+    for i in range(robot_width):
+        s1 = Point_2(start_point[2*i], start_point[2*i+1])
+        t1 = Point_2(target_point[2*i], target_point[2*i+1])
+        for j in range(i+1,robot_width):
+            s2 = Point_2(start_point[2*j], start_point[2*j+1])
+            t2 = Point_2(target_point[2*j], target_point[2*j+1])
+            if min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width:
+                return True
+    return False
 
 
 def path_collision_free(arrangement, robot_num, p1, p2):
