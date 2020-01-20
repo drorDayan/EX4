@@ -137,6 +137,20 @@ def paths_too_close(start_point, target_point, robot_width):
     return False
 
 
+def is_in_free_face(point_locator, point):
+    face = Face()
+    # locate can return a vertex or an edge or a face
+    located_obj = point_locator.locate(point)
+    # TODO Are we sure that we want to return False and not True if we're on a vertex/halfedge? Aren't the robots open, so it should be "True"?
+    if located_obj.is_vertex():
+        return False
+    if located_obj.is_halfedge():
+        return False
+    if located_obj.is_face():
+        located_obj.get_face(face)
+    return face.data()[FREESPACE]
+
+
 def is_valid_config(point_locator, conf, robot_num):
     for j in range(robot_num):
         if not is_in_free_face(point_locator, Point_2(conf[2*j], conf[2*j+1])):
@@ -210,18 +224,6 @@ def overlay_multiple_arrangements(arrs, face_merge_func):
         final_arr = temp_res
     return final_arr
 
-
-def is_in_free_face(point_locator, point):
-    face = Face()
-    # locate can return a vertex or an edge or a face
-    located_obj = point_locator.locate(point)
-    if located_obj.is_vertex():
-        return False
-    if located_obj.is_halfedge():
-        return False
-    if located_obj.is_face():
-        located_obj.get_face(face)
-    return face.data()[FREESPACE]
 
 
 def generate_path(path, robots, obstacles, destination):
