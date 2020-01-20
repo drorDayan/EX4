@@ -68,7 +68,7 @@ def dijkstra(graph, initial, end):
     path = path[::-1]
     return path
 class RRT_Node():
-	def __init__(self, pt, pr = None, n = None):
+	def __init__(self, pt, pr = None, n = 0):
 		self.point = pt
 		self.parent = pr
 		self.nval = n # Will be used to store distance to this point, etc.
