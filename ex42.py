@@ -45,12 +45,11 @@ def get_min_max(obstacles):
     max_y = max([max([v.y() for v in obs]) for obs in obstacles])
     min_x = min([min([v.x() for v in obs]) for obs in obstacles])
     min_y = min([min([v.y() for v in obs]) for obs in obstacles])
-    return FT.to_double(max_x), FT.to_double(max_y), FT.to_double(min_x), FT.to_double(min_y)
+    return max_x.to_double(), max_y.to_double(), min_x.to_double(), min_y.to_double()
 
 
 def get_square_mid(robot):
     x = (robot[0].x()+robot[1].x())/FT(2)
-    # TODO: (dror) aren't those supposed to be 0,1 instead of 1,2 (the line below)
     y = (robot[1].y()+robot[2].y())/FT(2)
     return [x, y]
 
