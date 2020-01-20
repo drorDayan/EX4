@@ -12,7 +12,7 @@ k_nearest = 10
 steer_eta = FT(1)
 inflation_epsilon = FT(0.05)
 FREESPACE = 'freespace'
-num_of_points_in_batch = 2000
+num_of_points_in_batch = 1000
 
 
 # Code: #
@@ -262,10 +262,11 @@ def path_collision_free(arrangement, robot_num, p1, p2):
                          (p2[2*i+1]-p1[2*i+1])*(p2[2*i+1]-p1[2*i+1])
         if robot_path_len > max_robot_path_len:
             max_robot_path_len = robot_path_len
-    sample_amount = FT(2)*FT(sqrt(max_robot_path_len.to_double()))/inflation_epsilon
+    sample_amount = FT(sqrt(max_robot_path_len.to_double()))/inflation_epsilon+FT(1)
     diff_vec = [((p2[i]-p1[i])/sample_amount) for i in range(2*robot_num)]
     curr = [p1[i] for i in range(2*robot_num)]
-    for i in range(int(sample_amount.to_double())+1):
+    for i in range(int(sample_amount.to_double())):
+        curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
         for j in range(robot_num):
             if not is_in_free_face(arrangement, Point_2(curr[2*j], curr[2*j+1])):
                 return False
@@ -273,7 +274,6 @@ def path_collision_free(arrangement, robot_num, p1, p2):
                 if abs(FT.to_double(curr[2*j] - curr[2*k])) < 1+inflation_epsilon.to_double() and \
                         abs(FT.to_double(curr[2*j+1] - curr[2*k+1])) < 1+inflation_epsilon.to_double():
                     return False
-        curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
     return True
 
 
