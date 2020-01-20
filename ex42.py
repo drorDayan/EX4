@@ -151,21 +151,11 @@ def is_in_free_face(point_locator, point):
     return face.data()[FREESPACE]
 
 
-def is_valid_config(point_locator, conf, robot_num):
-    for j in range(robot_num):
-        if not is_in_free_face(point_locator, Point_2(conf[2*j], conf[2*j+1])):
-            return False
-        for k in range(j + 1, robot_num):
-            if abs(FT.to_double(conf[2*j] - conf[2*k])) < 1+inflation_epsilon.to_double() and \
-                    abs(FT.to_double(conf[2*j+1] - conf[2*k+1])) < 1+inflation_epsilon.to_double():
-                return False
-    return True
-
-
 def path_collision_free(point_locator, robot_num, p1, p2, robot_width):
-    if not is_valid_config(point_locator, p2, robot_num):
-        return False
     max_robot_path_len = FT(0)
+    for j in range(robot_num):
+        if not is_in_free_face(point_locator, Point_2(p2[2*j], p2[2*j+1])):
+            return False
     for i in range(robot_num):
         robot_path_len = (p2[2*i]-p1[2*i])*(p2[2*i]-p1[2*i])+\
                          (p2[2*i+1]-p1[2*i+1])*(p2[2*i+1]-p1[2*i+1])
@@ -176,9 +166,10 @@ def path_collision_free(point_locator, robot_num, p1, p2, robot_width):
     curr = [p1[i] for i in range(2*robot_num)]
     for i in range(int(sample_amount.to_double())):
         curr = [sum(x, FT(0)) for x in zip(curr, diff_vec)]
-        if not is_valid_config(point_locator, curr, robot_num):
-            return False
-    return True
+        for j in range(robot_num):
+            if not is_in_free_face(point_locator, Point_2(curr[2*j], curr[2*j+1])):
+                return False
+    return not paths_too_close(p1,p2,robot_num, robot_width)
 
 
 def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, robot_width):
