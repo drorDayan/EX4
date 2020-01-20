@@ -228,10 +228,10 @@ def overlay_multiple_arrangements(arrs, face_merge_func):
 
 def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
+    start = time.time()
     # TODO make sure square is unit square
     robot_num = len(robots)
     assert(len(destination) == robot_num)
-    start = time.time()
     # init obs for collision detection
     v1 = Point_2(FT(1/2)+inflation_epsilon/FT(2), FT(1/2)+inflation_epsilon/FT(2))
     v2 = Point_2(FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)), FT(1/2)+inflation_epsilon/FT(2))
