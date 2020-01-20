@@ -385,7 +385,7 @@ def point_2_to_xy(p):
 from gui.gui import GUI, QtCore, QtGui, QtWidgets, Qt, QPointF
 
 
-def generate_path(path, robots, obstacles, destination, gui):
+def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
     # TODO make sure square is unit square
     robot_num = len(robots)
