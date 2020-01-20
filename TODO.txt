@@ -1,3 +1,4 @@
+find best params!!
 make pretty
 use vertical decomposition
 remove/use costume distances
