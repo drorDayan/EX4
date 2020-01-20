@@ -6,7 +6,7 @@ from math import sqrt
 # Configurable Variables: #
 
 k_nearest = 50
-steer_eta = FT(0.5)
+steer_eta = FT(0.3)
 inflation_epsilon = FT(0.02)
 num_of_points_in_batch = 1000
 use_single_robot_movement = True

@@ -1,4 +1,4 @@
 make pretty
 use vertical decomposition
-use single robot movements
 remove/use costume distances
+use only one single robot movement? (if the movement of both is invalid there is a high chance the second one is invalid)
