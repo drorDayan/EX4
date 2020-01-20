@@ -67,6 +67,19 @@ def dijkstra(graph, initial, end):
     # Reverse path
     path = path[::-1]
     return path
+class RRT_Node():
+	def __init__(self, pt, pr = None, n = None):
+		self.point = pt
+		self.parent = pr
+		self.nval = n # Will be used to store distance to this point, etc.
+	def get_path_to_here(self, ret_path):
+		cur = self
+		while cur != None:
+			ret_path.insert(0,cur.point)
+			cur = cur.parent
+		return ret_path
+
+
 ##############################################################################################################################
 
 def get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point):
@@ -286,7 +299,8 @@ def generate_path(path, robots, obstacles, destination):
     dest_point = Point_d(2*robot_num, sum(target_ref_points, []))
     vertices = [start_point]
     print(vertices)
-    graph = Graph()
+    # graph = Graph()
+    graph = {start_point:RRT_Node(start_point)}
     tree = Kd_tree(vertices)
     while True:
         print("new batch, " + "time= " + str(time.time() - start))
@@ -302,20 +316,21 @@ def generate_path(path, robots, obstacles, destination):
                 new_points.append(new)
                 vertices.append(new)
                 # TODO this is not a good way to hold edges should change it after we understand collision detection
-                graph.add_edge(near, new, 1)  # TODO more useful weight?
+                #graph.add_edge(near, new, 1)  # TODO more useful weight?
+                graph[new] = RRT_Node(new, graph[near])
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
         if try_connect_to_dest(graph, single_arrangement, robot_num, tree, dest_point):
             break
-    # TODO create the result (it is possible if we reached this point) use previous exercise bfs
-    dijk_path = dijkstra(graph, start_point, dest_point)
-    if len(dijk_path) > 0:
-        for pd in dijk_path:
-            next_conf = []
-            for i in range(robot_num):
-                next_conf.append(Point_2(pd[2*i],pd[2*i+1]))
-            path.append(next_conf)
+    graph[dest_point].get_path_to_here(path)
+    # dijk_path = dijkstra(graph, start_point, dest_point)
+    # if len(dijk_path) > 0:
+    #     for pd in dijk_path:
+    #         next_conf = []
+    #         for i in range(robot_num):
+    #             next_conf.append(Point_2(pd[2*i],pd[2*i+1]))
+    #         path.append(next_conf)
     print(vertices)
     print("finished, " + "time= " + str(time.time() - start))
 
