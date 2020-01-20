@@ -124,15 +124,15 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
     return min(cands)
 
 
-def paths_too_close(start_point, target_point, robot_width):
+def paths_too_close(start_point, target_point, robot_num, robot_width):
     # TODO Integrate this instead of the current "many polls" method we use to determine if paths are colliding with eachother.
-    for i in range(robot_width):
-        s1 = Point_2(start_point[2*i], start_point[2*i+1])
-        t1 = Point_2(target_point[2*i], target_point[2*i+1])
-        for j in range(i+1, robot_width):
-            s2 = Point_2(start_point[2*j], start_point[2*j+1])
-            t2 = Point_2(target_point[2*j], target_point[2*j+1])
-            if min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width:
+    for i in range(robot_num):
+        s1 = (start_point[2*i].to_double(), start_point[2*i+1]).to_double()
+        t1 = (target_point[2*i].to_double(), target_point[2*i+1].to_double())
+        for j in range(i+1, robot_num):
+            s2 = (start_point[2*j].to_double(), start_point[2*j+1].to_double())
+            t2 = (target_point[2*j].to_double(), target_point[2*j+1].to_double())
+            if min_dist_between_moving_robots(s1, s2, t1, t2) < robot_width.to_double():
                 return True
     return False
 
@@ -162,7 +162,7 @@ def is_valid_config(point_locator, conf, robot_num):
     return True
 
 
-def path_collision_free(point_locator, robot_num, p1, p2):
+def path_collision_free(point_locator, robot_num, p1, p2, robot_width):
     if not is_valid_config(point_locator, p2, robot_num):
         return False
     max_robot_path_len = FT(0)
@@ -181,10 +181,10 @@ def path_collision_free(point_locator, robot_num, p1, p2):
     return True
 
 
-def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point):
+def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, robot_width):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        if path_collision_free(point_locator, robot_num, neighbor[0], dest_point):
+        if path_collision_free(point_locator, robot_num, neighbor[0], dest_point, robot_width):
             graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
             return True
     return False
@@ -230,13 +230,16 @@ def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
     start = time.time()
     # TODO make sure square is unit square
+    robot_width = robots[0][0].x()-robot[0][1].x()
+    print("robot width is",robot_width)
     robot_num = len(robots)
     assert(len(destination) == robot_num)
     # init obs for collision detection
-    v1 = Point_2(FT(1/2)+inflation_epsilon/FT(2), FT(1/2)+inflation_epsilon/FT(2))
-    v2 = Point_2(FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)), FT(1/2)+inflation_epsilon/FT(2))
-    v3 = Point_2(FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)), FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)))
-    v4 = Point_2((FT(1/2)+inflation_epsilon/FT(2)), FT(-1)*(FT(1/2)+inflation_epsilon/FT(2)))
+    inf_sq_coord = (robot_width+inflation_epsilon)/FT(2)
+    v1 = Point_2(inf_sq_coord,          inf_sq_coord)
+    v2 = Point_2(inf_sq_coord*FT(-1),   inf_sq_coord)
+    v3 = Point_2(inf_sq_coord*FT(-1),   inf_sq_coord*FT(-1))
+    v4 = Point_2(inf_sq_coord,          inf_sq_coord*FT(-1))
     inflated_square = Polygon_2([v1, v2, v3, v4])
     cgal_obstacles = [Polygon_2([p for p in obs]) for obs in obstacles]
     c_space_obstacles = [minkowski_sum_by_full_convolution_2(inflated_square, obs) for obs in cgal_obstacles]
@@ -260,7 +263,7 @@ def generate_path(path, robots, obstacles, destination):
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
             new = steer(robot_num, near, p, steer_eta)
-            if path_collision_free(point_locator, robot_num, near, new):
+            if path_collision_free(point_locator, robot_num, near, new, robot_width):
                 new_points.append(new)
                 vertices.append(new)
                 graph[new] = RRT_Node(new, graph[near])
@@ -271,7 +274,7 @@ def generate_path(path, robots, obstacles, destination):
                     new_data.append(new[2 * i + 1])
                     new_data = new_data + [near[j] for j in range(2 * i + 2, 2*robot_num)]
                     my_new = Point_d(2*robot_num, new_data)
-                    if path_collision_free(point_locator, robot_num, near, my_new):
+                    if path_collision_free(point_locator, robot_num, near, my_new, robot_width):
                         new_points.append(my_new)
                         vertices.append(my_new)
                         graph[my_new] = RRT_Node(my_new, graph[near])
@@ -280,7 +283,7 @@ def generate_path(path, robots, obstacles, destination):
         # each double the size of the previous one
         tree.insert(new_points)
         print("vertices amount: "+str(len(vertices)))
-        if try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point):
+        if try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, robot_width):
             break
     d_path = []
     graph[dest_point].get_path_to_here(d_path)
