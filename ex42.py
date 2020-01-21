@@ -101,8 +101,6 @@ def steer(robot_num, near, rand, eta):
 def between(s, p, f):
     return (s <= p <= f) or (f <= p <= s)
 
-def abs_ft(x):
-    return FT(abs(x.to_double()))
 
 def min_dist_between_moving_robots(s1, s2, t1, t2):
     # 2DO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
@@ -117,15 +115,15 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
 
     m = dy/dx
     n = (dx*sy-dy*sx)/dx
-    cands = [max(abs_ft(sx), abs_ft(sy)), max(abs_ft(tx), abs_ft(ty))]
+    cands = [max(abs(sx), abs(sy)), max(abs(tx), abs(ty))]
     if m != 1:
         z = n/(1-m)
         if between(sx, z, tx):
-            cands.append(abs_ft(z))
+            cands.append(abs(z))
     if m != -1:
         z = n/(-1-m)
         if between(sx, z, tx):
-            cands.append(abs_ft(z))
+            cands.append(abs(z))
     return min(cands)
 
 
