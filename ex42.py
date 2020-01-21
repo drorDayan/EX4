@@ -112,7 +112,7 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
 
     m = dy/dx
     n = (dx*sy-dy*sx)/dx
-    cands = [max(s[0], s[1]), max(d[0], d[1])]
+    cands = [max(sx, sy), max(dx, dy)]
     if m != 1:
         t = n/(1-m)
         if between(sx, t, sx+dx):
@@ -127,7 +127,7 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
 def paths_too_close(start_point, target_point, robot_num, robot_width):
     # TODO Integrate this instead of the current "many polls" method we use to determine if paths are colliding with eachother.
     for i in range(robot_num):
-        s1 = (start_point[2*i].to_double(), start_point[2*i+1]).to_double()
+        s1 = (start_point[2*i].to_double(), start_point[2*i+1].to_double())
         t1 = (target_point[2*i].to_double(), target_point[2*i+1].to_double())
         for j in range(i+1, robot_num):
             s2 = (start_point[2*j].to_double(), start_point[2*j+1].to_double())
@@ -169,7 +169,7 @@ def path_collision_free(point_locator, robot_num, p1, p2, robot_width):
         for j in range(robot_num):
             if not is_in_free_face(point_locator, Point_2(curr[2*j], curr[2*j+1])):
                 return False
-    return not paths_too_close(p1,p2,robot_num, robot_width)
+    return not paths_too_close(p1, p2, robot_num, robot_width)
 
 
 def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, robot_width):
@@ -221,8 +221,8 @@ def generate_path(path, robots, obstacles, destination):
     print(path, robots, obstacles, destination)
     start = time.time()
     # TODO make sure square is unit square
-    robot_width = robots[0][0].x()-robot[0][1].x()
-    print("robot width is",robot_width)
+    robot_width = robots[0][1].x() - robots[0][0].x()
+    assert(robot_width == FT(1))
     robot_num = len(robots)
     assert(len(destination) == robot_num)
     # init obs for collision detection
