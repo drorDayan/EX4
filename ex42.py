@@ -84,13 +84,13 @@ def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
     for i in range(num_of_points - num_of_points_in_dest_direction):
-        coords = [FT(random.uniform(min_y if i % 2 else min_x,
-                                    max_y if i % 2 else max_x)) for i in range(2*robot_num)]
+        coords = [FT(random.uniform(min_y, max_y) if i % 2 else \
+                     random.uniform(min_x, max_x)) or i in range(2*robot_num)]
         v.append(Point_d(2*robot_num, coords))
     # we should try and steer to goal with some probability
     for i in range(num_of_points_in_dest_direction):
-        coords = [(FT(random.uniform(min_y if i % 2 else min_x,
-                                     max_y if i % 2 else max_x)) + dest_point[i])/FT(2)for i in range(2*robot_num)]
+        coords = [(FT(random.uniform(min_y, max_y) if i % 2 else \
+                      random.uniform(min_x, max_x)) + dest_point[i])/FT(2)for i in range(2*robot_num)]
         v.append(Point_d(2*robot_num, coords))
     return v
 
