@@ -101,18 +101,23 @@ def steer(robot_num, near, rand, eta):
 def between(s, p, f):
     return (s <= p <= f) or (f <= p <= s)
 
+def abs_ft(x):
+    return FT(abs(x.to_double()))
 
 def min_dist_between_moving_robots(s1, s2, t1, t2):
     # 2DO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
     sx = s1[0]-s2[0]
     sy = s1[1]-s2[1]
 
-    dy = t1[1]-t2[1]-sy
-    dx = t1[0]-t2[0]-sx
+    tx = t1[0]-t2[0]
+    ty = t1[1]-t2[1]
+
+    dx = tx - sx
+    dy = ty - sy
 
     m = dy/dx
     n = (dx*sy-dy*sx)/dx
-    cands = [max(sx, sy), max(dx, dy)]
+    cands = [max(abs_ft(sx), abs_ft(sy)), max(abs_ft(tx), abs_ft(ty))]
     if m != 1:
         t = n/(1-m)
         if between(sx, t, sx+dx):
@@ -222,7 +227,7 @@ def generate_path(path, robots, obstacles, destination):
     start = time.time()
     # TODO make sure square is unit square
     robot_width = robots[0][1].x() - robots[0][0].x()
-    assert(robot_width == FT(1))
+    assert(robot_width == FT(1)) # TODO Instead of having this assert here, make sure we can work even if it's not true (basically, make sure everywhere we assume width to be 1 can work with any width instead.)
     robot_num = len(robots)
     assert(len(destination) == robot_num)
     # init obs for collision detection
