@@ -80,16 +80,21 @@ def is_in_free_face(point_locator, point):
         return face.data()[FREESPACE]
     return False
 
+interweave = lambda l1,l2:[m for pair in zip(l1, l2) for m in pair]
 
 def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
     for i in range(num_of_points - num_of_points_in_dest_direction):
-        coords = [FT(random.uniform(min_x, max_x)) for i in range(2*robot_num)]
+        coords_x = [FT(random.uniform(min_x, max_x)) for i in range(robot_num)]
+        coords_y = [FT(random.uniform(min_y, max_y)) for i in range(robot_num)]
+        coords = interweave(coord_x,coords_y)
         v.append(Point_d(2*robot_num, coords))
     # we should try and steer to goal with some probability
     for i in range(num_of_points_in_dest_direction):
-        coords = [(FT(random.uniform(min_x, max_x)) + dest_point[i])/FT(2)for i in range(2*robot_num)]
+        coords_x = [(FT(random.uniform(min_x, max_x)) + dest_point[2*i])/FT(2)for i in range(robot_num)]
+        coords_y = [(FT(random.uniform(min_y, max_y)) + dest_point[2*i+1])/FT(2)for i in range(robot_num)]
+        coords = interweave(coord_x,coords_y)
         v.append(Point_d(2*robot_num, coords))
     return v
 
