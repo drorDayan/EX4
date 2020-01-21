@@ -119,13 +119,13 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
     n = (dx*sy-dy*sx)/dx
     cands = [max(abs_ft(sx), abs_ft(sy)), max(abs_ft(tx), abs_ft(ty))]
     if m != 1:
-        t = n/(1-m)
-        if between(sx, t, sx+dx):
-            cands.append(t)
+        z = n/(1-m)
+        if between(sx, z, tx):
+            cands.append(abs_ft(z))
     if m != -1:
-        t = n/(-1-m)
-        if between(sx, t, sx+dx):
-            cands.append(t)
+        z = n/(-1-m)
+        if between(sx, z, tx):
+            cands.append(abs_ft(z))
     return min(cands)
 
 
