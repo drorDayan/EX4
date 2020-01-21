@@ -235,10 +235,6 @@ def generate_path(path, robots, obstacles, destination):
                 graph[new] = RRT_Node(new, graph[near])
             elif do_use_single_robot_movement:
                 for i in range(robot_num):
-                    # new_data = [near[j] for j in range(2*i-1)]
-                    # new_data.append(new[2 * i])
-                    # new_data.append(new[2 * i + 1])
-                    # new_data = new_data + [near[j] for j in range(2 * i + 2, 2*robot_num)]
                     new_data = [near[j] for j in range(2*robot_num)]
                     new_data[2 * i] = new[2 * i]
                     new_data[2 * i + 1] = new[2 * i + 1]
@@ -253,7 +249,7 @@ def generate_path(path, robots, obstacles, destination):
         tree.insert(new_points)
         print("vertices amount: " + str(len(vertices)))
         if len(new_points) < single_robot_movement_if_less_then:
-            print("single_robot_movement_if_less_then")
+            print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
         if try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point):
             break
@@ -261,8 +257,8 @@ def generate_path(path, robots, obstacles, destination):
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2*i], dp[2*i+1]) for i in range(robot_num)])
-    print("finished, " + "time= " + str(time.time() - start))
     print("k_nearest = " + str(k_nearest))
     print("steer_eta = " + str(steer_eta))
     print("inflation_epsilon = " + str(inflation_epsilon))
     print("num_of_points_in_batch = " + str(num_of_points_in_batch))
+    print("finished, " + "time= " + str(time.time() - start))
