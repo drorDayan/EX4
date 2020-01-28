@@ -169,6 +169,15 @@ def get_normal_movement_vector(p1, p2, i, j):
     return normal_movement_vector
 
 
+def two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
+    mov_vec = get_normal_movement_vector(p1, p2, i, j)
+    zone_output = []
+    zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
+    if len(zone_output) > 1:
+        return True
+    return False
+
+
 # checks for collisions return:
 # True if collision free
 # False, first robot index that touches an obs if a robot touches an obs
@@ -190,12 +199,16 @@ def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_wi
         if len(zone_output) > 1:
             return False, i
     # check for robot to robot collision
-    for i in range(robot_num):
-        for j in range(i + 1, robot_num):
-            mov_vec = get_normal_movement_vector(p1, p2, i, j)
-            zone_output = []
-            zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
-            if len(zone_output) > 1:
+    if not do_single:
+        for i in range(robot_num):
+            for j in range(i + 1, robot_num):
+                if two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
+                    return False, robot_num
+    else:
+        for j in range(robot_num):
+            if j == robot_idx:
+                continue
+            if two_robot_intersect(p1, p2, robot_idx, j, double_width_square_arrangement, double_width_square_point_locator):
                 return False, robot_num
     return True, 0
 
@@ -220,6 +233,7 @@ def get_origin_robot_coord(width):
 
 
 def generate_path(path, robots, obstacles, destination):
+    # random.seed(0) #  for tests
     start = time.time()
     robot_width = robots[0][1].x() - robots[0][0].x()
     assert(robot_width == FT(1))
