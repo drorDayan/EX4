@@ -83,6 +83,7 @@ def is_in_free_face(point_locator, point):
 interweave = lambda l1,l2:[m for pair in zip(l1, l2) for m in pair]
 
 
+# TODO assume sqr and use [blah for range]
 def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
