@@ -110,7 +110,6 @@ def get_min_max(obstacles):
 
 def get_square_mid(robot):
     x = (robot[0].x()+robot[1].x())/FT(2)
-    # TODO: (dror) aren't those supposed to be 0,1 instead of 1,2 (the line below)
     y = (robot[1].y()+robot[2].y())/FT(2)
     return [x, y]
 
@@ -170,25 +169,42 @@ def get_normal_movement_vector(p1, p2, i, j):
     return normal_movement_vector
 
 
-def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_width_square_arrangement, double_width_square_point_locator):
-    for i in range(robot_num):
+# checks for collisions return:
+# True if collision free
+# False, first robot index that touches an obs if a robot touches an obs
+# False, robot_num if a robot touches another robot
+def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_width_square_arrangement, double_width_square_point_locator, do_single=False, robot_idx=0, first_invalid_idx=0):
+    # check for obs collision
+    if do_single:
+        if robot_idx < first_invalid_idx:
+            robots_to_check = []
+        elif robot_idx > first_invalid_idx:
+            robots_to_check = [robot_idx]
+        else:
+            return False, robot_idx
+    else:
+        robots_to_check = [i for i in range(robot_num)]
+    for i in robots_to_check:
         zone_output = []
         zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
         if len(zone_output) > 1:
-            return False
+            return False, i
+    # check for robot to robot collision
+    for i in range(robot_num):
         for j in range(i + 1, robot_num):
             mov_vec = get_normal_movement_vector(p1, p2, i, j)
             zone_output = []
             zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
             if len(zone_output) > 1:
-                return False
-    return True
+                return False, robot_num
+    return True, 0
 
 
 def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        if path_collision_free(point_locator, robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator):
+        free, x = path_collision_free(point_locator, robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator)
+        if free:
             graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
             return True
     return False
@@ -237,7 +253,8 @@ def generate_path(path, robots, obstacles, destination):
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
             new = steer(robot_num, near, p, steer_eta)
-            if path_collision_free(obstacles_point_locator, robot_num, near, new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
+            free, idx = path_collision_free(obstacles_point_locator, robot_num, near, new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator)
+            if free:
                 new_points.append(new)
                 vertices.append(new)
                 graph[new] = RRT_Node(new, graph[near])
@@ -247,7 +264,8 @@ def generate_path(path, robots, obstacles, destination):
                     new_data[2 * i] = new[2 * i]
                     new_data[2 * i + 1] = new[2 * i + 1]
                     my_new = Point_d(2*robot_num, new_data)
-                    if path_collision_free(obstacles_point_locator, robot_num, near, my_new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
+                    free, aa = path_collision_free(obstacles_point_locator, robot_num, near, my_new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator, do_single=True, robot_idx=i, first_invalid_idx=idx)
+                    if free:
                         new_points.append(my_new)
                         vertices.append(my_new)
                         graph[my_new] = RRT_Node(my_new, graph[near])
@@ -255,9 +273,9 @@ def generate_path(path, robots, obstacles, destination):
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
-        print("vertices amount: " + str(len(vertices)))
+        print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
-            # print("single robot movement")
+            print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
         if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, dest_point, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
             break
@@ -265,7 +283,8 @@ def generate_path(path, robots, obstacles, destination):
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2*i], dp[2*i+1]) for i in range(robot_num)])
-    print("k_nearest = " + str(k_nearest))
-    print("steer_eta = " + str(steer_eta))
-    print("num_of_points_in_batch = " + str(num_of_points_in_batch))
+    print("k_nearest = ", k_nearest)
+    print("steer_eta = ", steer_eta)
+    print("num_of_points_in_batch = ", num_of_points_in_batch)
+    print("used single robot movement:", do_use_single_robot_movement)
     print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices))
