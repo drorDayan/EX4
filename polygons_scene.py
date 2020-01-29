@@ -24,7 +24,7 @@ class Polygons_scene():
     colors = [Qt.yellow, Qt.green, Qt.black, Qt.blue, Qt.darkGreen, Qt.red, Qt.magenta, Qt.darkMagenta, Qt.darkGreen, Qt.darkCyan, Qt.cyan]
     for i in range(len(self.robots)):
       if (self.robots[i] != None):
-        self.gui_robots.append(gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], colors[i]))
+        self.gui_robots[i] = gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], colors[i])
     for obstacle in self.obstacles:
       self.gui_obstacles = []
       self.gui_obstacles.append(gui.add_polygon([point_2_to_xy(p) for p in obstacle], Qt.darkGray))
@@ -36,15 +36,18 @@ class Polygons_scene():
     scene = read_input.read_polygon_scene(filename)
     self.robot_num = scene[0]
     # gui.set_field(2, " ".join(scene[0]))
-    destinations = []
+    destinations = [None for i in range(self.robot_num)]
+    self.gui_destinations = [None for i in range(self.robot_num)]
     s = []
     for i in range(self.robot_num):
-      destinations.append(scene[i+1])
+      destinations[i] = scene[i+1]
       s.append(str(destinations[i].x().exact()) + " " + str(destinations[i].y().exact()))
       gui.set_field(i+5, s[i])
     self.set_destinations(destinations)
+    self.robots = [None for i in range(self.robot_num)]
+    self.gui_robots = [None for i in range(self.robot_num)]
     for i in range(self.robot_num):
-      self.robots.append(scene[i+self.robot_num+1])
+      self.robots[i] = scene[i+self.robot_num+1]
     self.obstacles = []
     for i in range(1+2*self.robot_num, len(scene)):
       self.obstacles.append(scene[i])
@@ -53,8 +56,11 @@ class Polygons_scene():
 
   def set_destinations(self, destinations):
     self.destinations = destinations
-    for i in range(len(destinations)):
-      self.gui_destinations.append(gui.add_disc(0.05, *point_2_to_xy(destinations[i]), Qt.green))
+    for i in range(len(self.gui_destinations)):
+      if self.gui_destinations[i] == None:
+        self.gui_destinations[i] = gui.add_disc(0.05, *point_2_to_xy(destinations[i]), Qt.green)
+      else:
+        self.gui_destinations[i].pos = QPointF(*point_2_to_xy(destinations[i]))
 
   def set_up_animation(self):
     self.draw_scene()
@@ -91,12 +97,12 @@ class Polygons_scene():
     check22 = True
     if self.path == None: return False
     if len(self.path) == 0: return False
-    robot_polygons = [None, None]
+    robot_polygons = [None for i in range(self.robot_num)]
     path_polygons = []
     if len(self.path) > 1:
       for i in range(len(self.path) - 1):
-        source = [None, None]
-        target = [None, None]
+        source = [None for i in range(self.robot_num)]
+        target = [None for i in range(self.robot_num)]
         for j in range(len(self.robots)):
           robot_polygons[j] = Polygon_2(self.robots[j])
           source[j] = self.path[i][j]
@@ -107,7 +113,9 @@ class Polygons_scene():
           else:
             pwh = ms_polygon_segment.minkowski_sum_polygon_point(robot_polygons[j], source[j])
           path_polygons.append(pwh)
-        if linear_path_intersection_test.do_intersect(robot_polygons[0], robot_polygons[1], source, target): check22 = False
+        for j in range(len(self.robots)):
+          for k in range(j, self.robot_num):
+            if linear_path_intersection_test.do_intersect(robot_polygons[j], robot_polygons[k], source, target): check22 = False
 
     obstacle_polygons = []
     for obs in self.obstacles:
@@ -131,20 +139,24 @@ class Polygons_scene():
 
 
     # check that the origin matches the first point in the path
-    check01 = True if self.robots[0][0] - offset == self.path[0][0] else False
-    check02 = True if self.robots[1][0] - offset == self.path[0][1] else False
+    check01 = True
+    for i in range(self.robot_num):
+      if self.robots[i][0] - offset != self.path[0][i]:
+        check01 = False
     # check that the destination matches the last point in the path
-    check11 = True if self.destinations[0] == self.path[-1][0] else False
-    check12 = True if self.destinations[1] == self.path[-1][1] else False
+    check11 = True
+    for i in range(self.robot_num):
+      if self.destinations[i] != self.path[-1][i]:
+        check11 = False
     #check that there are no collisions
     check21 = True if not path_set.do_intersect(obstacles_set) else False
-    res = (check01 and check02 and check11 and check12 and check21 and check22)
+    res = (check01 and check11 and check21 and check22)
     print("Valid path: ", res)
-    if check01 == False or check02 == False:
+    if check01 == False :
       print("Origin mismatch")
       print(self.robots[0][0] - offset, self.robots[1][0] - offset)
       print(self.path[0][0], self.path[0][1])
-    if check11 == False or check12 == False:
+    if check11 == False :
       print("Destination mismatch")
       print(self.destinations[0], self.destinations[1])
       print(self.path[-1][0], self.path[-1][1])
