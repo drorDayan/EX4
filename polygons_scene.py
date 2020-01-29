@@ -213,7 +213,7 @@ if __name__ == "__main__":
   gui = GUI()
   ps = Polygons_scene()
   gui.set_program_name("Multi-robot Motion Planning")
-  gui.set_field(0, "scene0_3")
+  gui.set_field(0, "scene3_very_hard_multi")
   gui.set_field(3, "ex42")
   gui.set_field(4, "path0.txt")
   #gui.set_field(5, "path_out.txt")

@@ -5,7 +5,7 @@ from math import sqrt
 
 # Configurable Variables: #
 
-k_nearest = 50
+k_nearest = 10
 steer_eta = FT(0.6)
 num_of_points_in_batch = 1200
 single_robot_movement_if_less_then = 20
@@ -215,7 +215,9 @@ def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_wi
 
 
 def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator):
+    print("in try connect dest")
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
+    print("nnnn")
     for neighbor in nn:
         free, x = path_collision_free(point_locator, robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator)
         if free:
@@ -265,6 +267,7 @@ def generate_path(path, robots, obstacles, destination):
         print("new batch, time= ", time.time() - start)
         # I use a batch so that the algorithm can be iterative
         batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
+        print("batch")
         new_points = []
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
@@ -275,6 +278,7 @@ def generate_path(path, robots, obstacles, destination):
                 vertices.append(new)
                 graph[new] = RRT_Node(new, graph[near])
             elif do_use_single_robot_movement:
+                print(" in single")
                 for i in range(robot_num):
                     new_data = [near[j] for j in range(2*robot_num)]
                     new_data[2 * i] = new[2 * i]
@@ -293,8 +297,10 @@ def generate_path(path, robots, obstacles, destination):
         if len(new_points) < single_robot_movement_if_less_then:
             print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
+        print("asdasd")
         if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, dest_point, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
             break
+        print("asdasdasdasd")
     d_path = []
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
