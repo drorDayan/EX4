@@ -24,7 +24,9 @@ def read_polygon_scene(filename):
   with open(filename, "r") as f:
     for line in f:
       input_data = line.split(" ")
-      if len(input_data) == 2:
+      if len(input_data) == 1:
+        out.append(int(input_data[0]))
+      elif len(input_data) == 2:
         out.append(Point_2(FT(Gmpq(input_data[0])), FT(Gmpq(input_data[1]))))
       else:
         polygon = []

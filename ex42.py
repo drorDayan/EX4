@@ -236,10 +236,11 @@ def get_origin_robot_coord(width):
 def generate_path(path, robots, obstacles, destination):
     # random.seed(0) #  for tests
     start = time.time()
-    robot_width = robots[0][1].x() - robots[0][0].x()
-    assert(robot_width == FT(1))
     robot_num = len(robots)
     assert(len(destination) == robot_num)
+    for i in range(robot_num):
+        robot_width = robots[i][1].x() - robots[i][0].x()
+        assert(robot_width == FT(1))
     do_use_single_robot_movement = False
     # init obs for collision detection
     one_width_square = Polygon_2(get_origin_robot_coord(robot_width))
