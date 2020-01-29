@@ -64,33 +64,24 @@ class Polygons_scene():
 
   def set_up_animation(self):
     self.draw_scene()
+    colors = [Qt.yellow, Qt.green, Qt.black, Qt.blue, Qt.darkGreen, Qt.red, Qt.magenta, Qt.darkMagenta, Qt.darkGreen,
+              Qt.darkCyan, Qt.cyan]
     if len(self.path) == 0:
       return
     if len(self.path) == 1:
-      start = point_2_to_xy(self.path[0][0] + offset)
-      anim0 = gui.linear_translation_animation(self.gui_robots[0], *start, *start)
-      start = point_2_to_xy(self.path[0][1] + offset)
-      anim1 = gui.linear_translation_animation(self.gui_robots[1], *start, *start)
-      anim = gui.parallel_animation(anim0, anim1)
-      gui.queue_animation(anim)
+      return
     else:
       for i in range(len(self.path) - 1):
-        start0 = point_2_to_xy(self.path[i][0])
-        end0 = point_2_to_xy(self.path[i+1][0])
-        s = gui.add_segment(*start0, *end0, Qt.yellow)
-        start0 = point_2_to_xy(self.path[i][0] + offset)
-        end0 = point_2_to_xy(self.path[i + 1][0] + offset)
-        s.line.setZValue(2)
-        anim0 = gui.linear_translation_animation(self.gui_robots[0], *start0, *end0)
-
-        start1 = point_2_to_xy(self.path[i][1])
-        end1 = point_2_to_xy(self.path[i + 1][1])
-        s = gui.add_segment(*start1, *end1, Qt.green)
-        start1 = point_2_to_xy(self.path[i][1] + offset)
-        end1 = point_2_to_xy(self.path[i + 1][1] + offset)
-        s.line.setZValue(2)
-        anim1 = gui.linear_translation_animation(self.gui_robots[1], *start1, *end1)
-        anim = gui.parallel_animation(anim0, anim1)
+        anim_l = [None for i in range(self.robot_num)]
+        for r_i in range(self.robot_num):
+          start = point_2_to_xy(self.path[i][r_i])
+          end = point_2_to_xy(self.path[i+1][r_i])
+          s = gui.add_segment(*start, *end, colors[r_i])
+          start = point_2_to_xy(self.path[i][r_i] + offset)
+          end = point_2_to_xy(self.path[i + 1][r_i] + offset)
+          s.line.setZValue(2)
+          anim_l[r_i] = gui.linear_translation_animation(self.gui_robots[r_i], *start, *end)
+        anim = gui.parallel_animation(anim_l)
         gui.queue_animation(anim)
 
   def is_path_valid(self):
