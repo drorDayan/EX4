@@ -41,8 +41,8 @@ class Polygons_scene():
     s = []
     for i in range(self.robot_num):
       destinations[i] = scene[i+1]
-      s.append(str(destinations[i].x().exact()) + " " + str(destinations[i].y().exact()))
-      gui.set_field(i+5, s[i])
+      # s.append(str(destinations[i].x().exact()) + " " + str(destinations[i].y().exact()))
+      # gui.set_field(i+5, s[i])
     self.set_destinations(destinations)
     self.robots = [None for i in range(self.robot_num)]
     self.gui_robots = [None for i in range(self.robot_num)]
