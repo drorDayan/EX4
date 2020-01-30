@@ -141,6 +141,7 @@ def get_nearest(robot_num, tree, new_points, rand):
     if len(new_points) == 0:
         return nn_in_tree[0]
     # check distance from new points
+    #  TODO make sure it works
     dist = [distance_squared(robot_num, rand, point) for point in new_points]
     min_dist = dist[0]
     min_i = 0
@@ -267,7 +268,7 @@ def generate_path(path, robots, obstacles, destination):
     graph = {start_point:RRT_Node(start_point)}
     tree = Kd_tree(vertices)
     while True:
-        #print("new batch, time= ", time.time() - start)
+        print("new batch, time= ", time.time() - start)
         # I use a batch so that the algorithm can be iterative
         batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
         new_points = []
@@ -294,7 +295,7 @@ def generate_path(path, robots, obstacles, destination):
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
-        #print("vertices amount: ", len(vertices))
+        print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
             #print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
