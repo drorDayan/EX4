@@ -294,6 +294,7 @@ def generate_path(path, robots, obstacles, destination):
 
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
+        # TODO create a valid point distance handler and play with it using constant random (and compare to current)
         tree.insert(new_points)
         print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
