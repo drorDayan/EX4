@@ -170,8 +170,8 @@ def generate_path():
   gui.clear_queue()
   path_name = gui.get_field(3)
   gp = importlib.import_module(path_name)
-  #for steer_eta in [FT(0.1), FT(0.2), FT(0.3), FT(0.4), FT(0.5), FT(0.6), FT(0.7), FT(0.8), FT(0.9), FT(1.0)]:
-  #  for i in range(10):
+  # for steer_eta in [FT(0.1), FT(0.2), FT(0.3), FT(0.4), FT(0.5), FT(0.6), FT(0.7), FT(0.8), FT(0.9), FT(1.0), FT(1.1), FT(1.2), FT(1.3), FT(1.4), FT(1.5)]:
+  #   for i in range(10):
   gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations)
   # print("Generated path via", path_name + ".generate_path")
   ps.set_up_animation()
@@ -215,7 +215,7 @@ if __name__ == "__main__":
   gui = GUI()
   ps = Polygons_scene()
   gui.set_program_name("Multi-robot Motion Planning")
-  gui.set_field(0, "scene3_very_hard_multi")
+  gui.set_field(0, "scenes/scene3_very_hard")
   gui.set_field(3, "ex42")
   gui.set_field(4, "path0.txt")
   #gui.set_field(5, "path_out.txt")
