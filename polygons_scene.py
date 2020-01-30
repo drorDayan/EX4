@@ -170,8 +170,10 @@ def generate_path():
   gui.clear_queue()
   path_name = gui.get_field(3)
   gp = importlib.import_module(path_name)
+  #for steer_eta in [FT(0.1), FT(0.2), FT(0.3), FT(0.4), FT(0.5), FT(0.6), FT(0.7), FT(0.8), FT(0.9), FT(1.0)]:
+  #  for i in range(10):
   gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations)
-  print("Generated path via", path_name + ".generate_path")
+  # print("Generated path via", path_name + ".generate_path")
   ps.set_up_animation()
 
 def load_path():

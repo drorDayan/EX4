@@ -119,9 +119,9 @@ def k_nn(tree, k, query, eps):
     search_nearest = True
     sort_neighbors = True
     # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
-    print("pre search")
+    #print("pre search")
     search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
-    print("post search")
+    #print("post search")
     lst = []
     search.k_neighbors(lst)
     return lst
@@ -174,11 +174,12 @@ def get_normal_movement_vector(p1, p2, i, j):
 
 def two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
     mov_vec = get_normal_movement_vector(p1, p2, i, j)
-    zone_output = []
-    zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
-    if len(zone_output) > 1:
-        return True
-    return False
+    return do_intersect(double_width_square_arrangement, mov_vec)
+    # zone_output = []
+    # zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
+    # if len(zone_output) > 1:
+    #     return True
+    # return False
 
 
 # checks for collisions return:
@@ -197,10 +198,12 @@ def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_wi
     else:
         robots_to_check = [i for i in range(robot_num)]
     for i in robots_to_check:
-        zone_output = []
-        zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
-        if len(zone_output) > 1:
+        if do_intersect(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1]))):
             return False, i
+        # zone_output = []
+        # zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
+        # if len(zone_output) > 1:
+        #     return False, i
     # check for robot to robot collision
     if not do_single:
         for i in range(robot_num):
@@ -264,7 +267,7 @@ def generate_path(path, robots, obstacles, destination):
     graph = {start_point:RRT_Node(start_point)}
     tree = Kd_tree(vertices)
     while True:
-        print("new batch, time= ", time.time() - start)
+        #print("new batch, time= ", time.time() - start)
         # I use a batch so that the algorithm can be iterative
         batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
         new_points = []
@@ -291,9 +294,9 @@ def generate_path(path, robots, obstacles, destination):
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
         tree.insert(new_points)
-        print("vertices amount: ", len(vertices))
+        #print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
-            print("single robot movement")
+            #print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
         if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, dest_point, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
             break
@@ -301,8 +304,8 @@ def generate_path(path, robots, obstacles, destination):
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2*i], dp[2*i+1]) for i in range(robot_num)])
-    print("k_nearest = ", k_nearest)
-    print("steer_eta = ", steer_eta)
-    print("num_of_points_in_batch = ", num_of_points_in_batch)
-    print("used single robot movement:", do_use_single_robot_movement)
-    print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices))
+    #print("k_nearest = ", k_nearest)
+    #print("steer_eta = ", steer_eta)
+    #print("num_of_points_in_batch = ", num_of_points_in_batch)
+    #print("used single robot movement:", do_use_single_robot_movement)
+    print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
