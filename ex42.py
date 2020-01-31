@@ -16,10 +16,10 @@ FREESPACE = 'freespace'
 
 
 class RRT_Node():
-    def __init__(self, pt, pr=None, n=0):
+    def __init__(self, pt, pr=None, cst=0):
         self.point = pt
         self.parent = pr
-        self.nval = n  # Will be used to store distance to this point, etc.
+        self.cost = cst  # Will be used to store distance to this point, etc.
 
     def get_path_to_here(self, ret_path):
         cur = self
