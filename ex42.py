@@ -9,7 +9,6 @@ k_nearest = 50
 steer_eta = FT(0.6)
 num_of_points_in_batch = 1200
 single_robot_movement_if_less_then = 20
-num_of_points_in_array = 100
 use_single_robot_movement = True
 FREESPACE = 'freespace'
 
@@ -153,6 +152,7 @@ class CollisionDetector:
 #         self.robot_num = robot_num
 #         self.tree = Kd_tree([])
 #         self.points_in_tree = 0
+#         self.num_of_points_in_array = 100
 #         self.point_array = points
 #
 #     def get_nearest(self, point):
