@@ -5,10 +5,11 @@ from math import sqrt
 
 # Configurable Variables: #
 
-k_nearest = 10
+k_nearest = 50
 steer_eta = FT(0.6)
 num_of_points_in_batch = 1200
 single_robot_movement_if_less_then = 20
+num_of_points_in_array = 100
 use_single_robot_movement = True
 FREESPACE = 'freespace'
 
@@ -33,8 +34,8 @@ class RrtNode:
 class CollisionDetector:
     def __init__(self, robot_width, obstacles, robot_num):
         # init obs for collision detection
-        one_width_square = Polygon_2(get_origin_robot_coord(robot_width))
-        double_width_square = Polygon_with_holes_2(Polygon_2(get_origin_robot_coord(FT(2) * robot_width)))
+        one_width_square = Polygon_2(self.get_origin_robot_coord(robot_width))
+        double_width_square = Polygon_with_holes_2(Polygon_2(self.get_origin_robot_coord(FT(2) * robot_width)))
         inflated_obstacles = [Polygon_2([p for p in obs]) for obs in obstacles]
         c_space_obstacles = [minkowski_sum_by_full_convolution_2(one_width_square, obs) for obs in inflated_obstacles]
         c_space_arrangements = [self.polygon_with_holes_to_arrangement(obs) for obs in c_space_obstacles]
@@ -64,6 +65,15 @@ class CollisionDetector:
             if f.data() is None:
                 f.set_data({FREESPACE: True})
         return arr
+
+    @staticmethod
+    def get_origin_robot_coord(width):
+        robot_width = width / FT(2)
+        v1 = Point_2(robot_width, robot_width)
+        v2 = Point_2(robot_width * FT(-1), robot_width)
+        v3 = Point_2(robot_width * FT(-1), robot_width * FT(-1))
+        v4 = Point_2(robot_width, robot_width * FT(-1))
+        return [v1, v2, v3, v4]
 
     @staticmethod
     def merge_faces_by_freespace_flag(x, y):
@@ -138,6 +148,52 @@ class CollisionDetector:
         return True, 0
 
 
+# class NeighborsFinder:
+#     def __init__(self, robot_num, points):
+#         self.robot_num = robot_num
+#         self.tree = Kd_tree([])
+#         self.points_in_tree = 0
+#         self.point_array = points
+#
+#     def get_nearest(self, point):
+#         if self.points_in_tree > 0:
+#             nn = self.tree_k_nn(1, point)
+#             nn_in_tree = nn[0]
+#         else:
+#             dist = [distance_squared(self.robot_num, point, a_point) for a_point in self.point_array]
+#             min_dist = min(dist)
+#             return self.point_array[dist.index(min_dist)]
+#         if len(self.point_array) == 0:
+#             return nn_in_tree[0]
+#         # check distance from new points
+#         dist = [distance_squared(self.robot_num, point, a_point) for a_point in self.point_array]
+#         min_dist = min(dist)
+#         if min_dist < nn_in_tree[1]:
+#             return self.point_array[dist.index(min_dist)]
+#         return nn_in_tree[0]
+#
+#     def add_points(self, points):
+#         if len(self.point_array) < num_of_points_in_array:
+#             self.point_array += points
+#         else:
+#             self.tree.insert(self.point_array + points)
+#             self.points_in_tree += len(self.point_array)
+#             self.point_array = []
+#
+#     def tree_k_nn(self, k, query):
+#         if self.points_in_tree == 0:
+#             return []
+#         search_nearest = True
+#         sort_neighbors = True
+#         # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
+#         # print("pre search")
+#         search = K_neighbor_search(self.tree, query, k, FT(0), search_nearest, Euclidean_distance(), sort_neighbors)
+#         # print("post search")
+#         lst = []
+#         search.k_neighbors(lst)
+#         return lst
+
+
 def get_batch(robot_num, num_of_points, min_coord, max_coord, dest_p):
     # num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
     # v1 = [Point_d(2*robot_num,
@@ -161,39 +217,8 @@ def get_square_mid(robot):
     return [x, y]
 
 
-def k_nn(tree, k, query, eps):
-    search_nearest = True
-    sort_neighbors = True
-    # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
-    #print("pre search")
-    search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
-    #print("post search")
-    lst = []
-    search.k_neighbors(lst)
-    return lst
-
-
 def distance_squared(robot_num, p1, p2):
     return sum([(p1[i] - p2[i]) * (p1[i] - p2[i]) for i in range(2*robot_num)], FT(0))
-
-
-def get_nearest(robot_num, tree, new_points, rand):
-    nn = k_nn(tree, 1, rand, FT(0))
-    nn_in_tree = nn[0]
-    if len(new_points) == 0:
-        return nn_in_tree[0]
-    # check distance from new points
-    #  TODO make sure it works
-    dist = [distance_squared(robot_num, rand, point) for point in new_points]
-    min_dist = dist[0]
-    min_i = 0
-    for i in range(len(new_points)):
-        if dist[i] < min_dist:
-            min_dist = dist[i]
-            min_i = i
-    if min_dist < nn_in_tree[1] * nn_in_tree[1]:
-        return new_points[min_i]
-    return nn_in_tree[0]
 
 
 def steer(robot_num, near, rand, eta):
@@ -204,23 +229,42 @@ def steer(robot_num, near, rand, eta):
         return Point_d(2*robot_num, [near[i]+(rand[i]-near[i])*eta/dist for i in range(2*robot_num)])
 
 
+def k_nn(tree, k, query, eps):
+    search_nearest = True
+    sort_neighbors = True
+    # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
+    search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
+    lst = []
+    search.k_neighbors(lst)
+    return lst
+
+
+def get_nearest(robot_num, tree, new_points, rand):
+    nn = k_nn(tree, 1, rand, FT(0))
+    nn_in_tree = nn[0]
+    if len(new_points) == 0:
+        return nn_in_tree[0]
+    # check distance from new points
+    dist = [distance_squared(robot_num, rand, point) for point in new_points]
+    min_dist = dist[0]
+    min_i = 0
+    for i in range(len(new_points)):
+        if dist[i] < min_dist:
+            min_dist = dist[i]
+            min_i = i
+    if min_dist < nn_in_tree[1]:
+        return new_points[min_i]
+    return nn_in_tree[0]
+
+
 def try_connect_to_dest(graph, tree, dest_point, collision_detector):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        free,x = collision_detector.path_collision_free(neighbor[0], dest_point)
+        free, x = collision_detector.path_collision_free(neighbor[0], dest_point)
         if free:
             graph[dest_point] = RrtNode(dest_point, graph[neighbor[0]])
             return True
     return False
-
-
-def get_origin_robot_coord(width):
-    robot_width = width/FT(2)
-    v1 = Point_2(robot_width, robot_width)
-    v2 = Point_2(robot_width * FT(-1), robot_width)
-    v3 = Point_2(robot_width * FT(-1), robot_width*FT(-1))
-    v4 = Point_2(robot_width, robot_width * FT(-1))
-    return [v1, v2, v3, v4]
 
 
 def generate_path(path, robots, obstacles, destination):
