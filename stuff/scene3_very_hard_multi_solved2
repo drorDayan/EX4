@@ -1,0 +1,134 @@
+D:\Dev\EX4\venv\Scripts\python.exe D:/Dev/EX4/polygons_scene.py
+loaded scene from scenes/scene3_very_hard_multi
+new batch, time=  0.17054200172424316
+vertices amount:  1
+new batch, time=  1.6495862007141113
+vertices amount:  246
+new batch, time=  27.361816883087158
+vertices amount:  350
+new batch, time=  41.48304891586304
+vertices amount:  607
+new batch, time=  68.16768002510071
+vertices amount:  908
+new batch, time=  102.15580749511719
+vertices amount:  1121
+new batch, time=  128.93418836593628
+vertices amount:  1467
+new batch, time=  169.15961480140686
+vertices amount:  1819
+new batch, time=  210.1698875427246
+vertices amount:  2155
+new batch, time=  249.60641384124756
+vertices amount:  2475
+new batch, time=  287.8222026824951
+vertices amount:  2762
+new batch, time=  325.41375732421875
+vertices amount:  3129
+new batch, time=  370.44829201698303
+vertices amount:  3475
+new batch, time=  411.3927969932556
+vertices amount:  3767
+new batch, time=  450.6567406654358
+vertices amount:  4054
+new batch, time=  489.03315114974976
+vertices amount:  4387
+new batch, time=  533.360545873642
+vertices amount:  4704
+new batch, time=  575.298424243927
+vertices amount:  5068
+new batch, time=  621.3083617687225
+vertices amount:  5404
+new batch, time=  663.5204710960388
+vertices amount:  5733
+new batch, time=  706.8565216064453
+vertices amount:  6048
+new batch, time=  750.4100787639618
+vertices amount:  6395
+new batch, time=  794.6477644443512
+vertices amount:  6729
+new batch, time=  840.4143147468567
+vertices amount:  7061
+new batch, time=  885.8508348464966
+vertices amount:  7424
+new batch, time=  932.8920226097107
+vertices amount:  7775
+new batch, time=  981.5548257827759
+vertices amount:  8175
+new batch, time=  1032.1455194950104
+vertices amount:  8521
+new batch, time=  1078.494675397873
+vertices amount:  8904
+new batch, time=  1128.354323387146
+vertices amount:  9319
+new batch, time=  1190.8122351169586
+vertices amount:  9641
+new batch, time=  1243.610071182251
+vertices amount:  9993
+new batch, time=  1293.9494338035583
+vertices amount:  10361
+new batch, time=  1347.0863101482391
+vertices amount:  10764
+new batch, time=  1401.609447479248
+vertices amount:  11132
+new batch, time=  1455.6998627185822
+vertices amount:  11449
+new batch, time=  1505.5605065822601
+vertices amount:  11806
+new batch, time=  1559.037523984909
+vertices amount:  12143
+new batch, time=  1611.4762308597565
+vertices amount:  12523
+new batch, time=  1667.2819743156433
+vertices amount:  12894
+new batch, time=  1720.3576791286469
+vertices amount:  13205
+new batch, time=  1771.3503422737122
+vertices amount:  13570
+new batch, time=  1825.059688091278
+vertices amount:  13871
+new batch, time=  1874.8185937404633
+vertices amount:  14152
+new batch, time=  1924.4408478736877
+vertices amount:  14484
+new batch, time=  1973.3022062778473
+vertices amount:  14827
+new batch, time=  2025.7808895111084
+vertices amount:  15196
+new batch, time=  2080.754903793335
+vertices amount:  15565
+new batch, time=  2133.288370370865
+vertices amount:  15922
+new batch, time=  2182.904748916626
+vertices amount:  16283
+new batch, time=  2234.950514316559
+vertices amount:  16627
+new batch, time=  2285.1433136463165
+vertices amount:  16965
+new batch, time=  2337.854292869568
+vertices amount:  17300
+new batch, time=  2389.966828107834
+vertices amount:  17626
+new batch, time=  2447.07412981987
+vertices amount:  17999
+new batch, time=  2505.393884420395
+vertices amount:  18359
+new batch, time=  2567.289619922638
+vertices amount:  18682
+new batch, time=  2624.3377344608307
+vertices amount:  19058
+new batch, time=  2685.262605905533
+vertices amount:  19418
+new batch, time=  2743.0587990283966
+vertices amount:  19771
+new batch, time=  2800.3383367061615
+vertices amount:  20100
+new batch, time=  2856.081704378128
+vertices amount:  20464
+new batch, time=  2915.495055437088
+vertices amount:  20855
+new batch, time=  2976.8481380939484
+vertices amount:  21227
+new batch, time=  3036.6235263347626
+vertices amount:  21583
+finished, time=  3095.397120475769 vertices amount:  21583 steer_eta =  0.6
+Valid path:  True

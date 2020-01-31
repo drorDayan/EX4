@@ -15,7 +15,7 @@ FREESPACE = 'freespace'
 # Code: #
 
 
-class RRT_Node():
+class RrtNode:
     def __init__(self, pt, pr=None, n=0):
         self.point = pt
         self.parent = pr
@@ -23,61 +23,119 @@ class RRT_Node():
 
     def get_path_to_here(self, ret_path):
         cur = self
-        while cur != None:
+        while cur is not None:
             ret_path.insert(0, cur.point)
             cur = cur.parent
         return ret_path
 
+
 # obs collision detection code: #
+class CollisionDetector:
+    def __init__(self, robot_width, obstacles, robot_num):
+        # init obs for collision detection
+        one_width_square = Polygon_2(get_origin_robot_coord(robot_width))
+        double_width_square = Polygon_with_holes_2(Polygon_2(get_origin_robot_coord(FT(2) * robot_width)))
+        inflated_obstacles = [Polygon_2([p for p in obs]) for obs in obstacles]
+        c_space_obstacles = [minkowski_sum_by_full_convolution_2(one_width_square, obs) for obs in inflated_obstacles]
+        c_space_arrangements = [self.polygon_with_holes_to_arrangement(obs) for obs in c_space_obstacles]
+        self.obstacles_arrangement = self.overlay_multiple_arrangements(c_space_arrangements, self.merge_faces_by_freespace_flag)
+        self.obstacles_point_locator = Arr_trapezoid_ric_point_location(self.obstacles_arrangement)
+        self.double_width_square_arrangement = self.polygon_with_holes_to_arrangement(double_width_square)
+        self.double_width_square_point_locator = Arr_trapezoid_ric_point_location(self.double_width_square_arrangement)
+        self.robot_num = robot_num
 
+    @staticmethod
+    def polygon_with_holes_to_arrangement(poly):
+        assert isinstance(poly, Polygon_with_holes_2)
+        arr = Arrangement_2()
+        insert(arr, [Curve_2(e) for e in poly.outer_boundary().edges()])
 
-def polygon_with_holes_to_arrangement(poly):
-    assert isinstance(poly, Polygon_with_holes_2)
-    arr = Arrangement_2()
-    insert(arr, [Curve_2(e) for e in poly.outer_boundary().edges()])
+        # set the freespace flag for the only current two faces
+        for f in arr.faces():
+            assert isinstance(f, Face)
+            f.set_data({FREESPACE: f.is_unbounded()})
 
-    # set the freespace flag for the only current two faces
-    for f in arr.faces():
-        assert isinstance(f, Face)
-        f.set_data({FREESPACE: f.is_unbounded()})
+        # TODO: test this with a complex polygon
+        for hole in poly.holes():
+            insert(arr, [Curve_2(e) for e in hole.edges()])
 
-    # TODO: test this with a complex polygon
-    for hole in poly.holes():
-        insert(arr, [Curve_2(e) for e in hole.edges()])
+        for f in arr.faces():
+            assert isinstance(f, Face)
+            if f.data() is None:
+                f.set_data({FREESPACE: True})
+        return arr
 
-    for f in arr.faces():
-        assert isinstance(f, Face)
-        if f.data() is None:
-            f.set_data({FREESPACE: True})
-    return arr
+    @staticmethod
+    def merge_faces_by_freespace_flag(x, y):
+        return {FREESPACE: x[FREESPACE] and y[FREESPACE]}
 
+    @staticmethod
+    def overlay_multiple_arrangements(arrs, face_merge_func):
+        final_arr = arrs[0]
+        for arr in arrs[1:]:
+            temp_res = Arrangement_2()
 
-def merge_faces_by_freespace_flag(x, y):
-    return {FREESPACE: x[FREESPACE] and y[FREESPACE]}
+            overlay(final_arr, arr, temp_res, Arr_face_overlay_traits(face_merge_func))
+            final_arr = temp_res
+        return final_arr
 
+    @staticmethod
+    def is_in_free_face(point_locator, point):
+        face = Face()
+        # locate can return a vertex or an edge or a face
+        located_obj = point_locator.locate(point)
+        # if located_obj.is_vertex():
+        #     return False
+        # if located_obj.is_halfedge():
+        #     return False
+        if located_obj.is_face():
+            located_obj.get_face(face)
+            return face.data()[FREESPACE]
+        return False
 
-def overlay_multiple_arrangements(arrs, face_merge_func):
-    final_arr = arrs[0]
-    for arr in arrs[1:]:
-        temp_res = Arrangement_2()
+    @staticmethod
+    def get_normal_movement_vector(p1, p2, i, j):
+        start_point = [p1[2*i] - p1[2*j], p1[2*i+1] - p1[2*j+1]]
+        diff_vec = [(p2[2*i] - p1[2*i])-(p2[2*j] - p1[2*j]), (p2[2*i+1] - p1[2*i+1])-(p2[2*j+1] - p1[2*j+1])]
+        normal_movement_vector = Curve_2(Point_2(start_point[0], start_point[1]),
+                                         Point_2(start_point[0]+diff_vec[0], start_point[1]+diff_vec[1]))
+        return normal_movement_vector
 
-        overlay(final_arr, arr, temp_res, Arr_face_overlay_traits(face_merge_func))
-        final_arr = temp_res
-    return final_arr
+    def two_robot_intersect(self, p1, p2, i, j):
+        mov_vec = self.get_normal_movement_vector(p1, p2, i, j)
+        return do_intersect(self.double_width_square_arrangement, mov_vec)
 
-
-def is_in_free_face(point_locator, point):
-    face = Face()
-    # locate can return a vertex or an edge or a face
-    located_obj = point_locator.locate(point)
-    # if located_obj.is_vertex():
-    #     return False
-    # if located_obj.is_halfedge():
-    #     return False
-    if located_obj.is_face():
-        located_obj.get_face(face)
-        return face.data()[FREESPACE]
-    return False
+    # checks for collisions return:
+    # True if collision free
+    # False, first robot index that touches an obs if a robot touches an obs
+    # False, robot_num if a robot touches another robot
+    def path_collision_free(self, p1, p2, do_single=False, robot_idx=0, first_invalid_idx=0):
+        # check for obs collision
+        if do_single:
+            if robot_idx < first_invalid_idx:
+                robots_to_check = []
+            elif robot_idx > first_invalid_idx:
+                robots_to_check = [robot_idx]
+            else:
+                return False, robot_idx
+        else:
+            robots_to_check = [i for i in range(self.robot_num)]
+        for i in robots_to_check:
+            if do_intersect(self.obstacles_arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1]))):
+                return False, i
+        # check for robot to robot collision
+        if not do_single:
+            for i in range(self.robot_num):
+                for j in range(i + 1, self.robot_num):
+                    if self.two_robot_intersect(p1, p2, i, j):
+                        return False, self.robot_num
+        else:
+            for j in range(self.robot_num):
+                if j == robot_idx:
+                    continue
+                if self.two_robot_intersect(p1, p2, robot_idx, j):
+                    return False, self.robot_num
+        return True, 0
 
 
 interweave = lambda l1,l2:[m for pair in zip(l1, l2) for m in pair]
@@ -128,11 +186,7 @@ def k_nn(tree, k, query, eps):
 
 
 def distance_squared(robot_num, p1, p2):
-    # return transformed_distance(p1, p2)
-    tmp = FT(0)
-    for i in range(2*robot_num):
-        tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
-    return tmp
+    return sum([(p1[i] - p2[i]) * (p1[i] - p2[i]) for i in range(2*robot_num)], FT(0))
 
 
 def get_nearest(robot_num, tree, new_points, rand):
@@ -162,70 +216,12 @@ def steer(robot_num, near, rand, eta):
         return Point_d(2*robot_num, [near[i]+(rand[i]-near[i])*eta/dist for i in range(2*robot_num)])
 
 
-def get_normal_movement_vector(p1, p2, i, j):
-    i_x_diff = p2[2*i] - p1[2*i]
-    i_y_diff = p2[2*i+1] - p1[2*i+1]
-    j_x_diff = p2[2*j] - p1[2*j]
-    j_y_diff = p2[2*j+1] - p1[2*j+1]
-    start_point = [p1[2*i]-p1[2*j], p1[2*i+1]-p1[2*j+1]]
-    diff_vec = [i_x_diff-j_x_diff, i_y_diff-j_y_diff]
-    normal_movement_vector = Curve_2(Point_2(start_point[0], start_point[1]), Point_2(start_point[0]+diff_vec[0], start_point[1]+diff_vec[1]))
-    return normal_movement_vector
-
-
-def two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
-    mov_vec = get_normal_movement_vector(p1, p2, i, j)
-    return do_intersect(double_width_square_arrangement, mov_vec)
-    # zone_output = []
-    # zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
-    # if len(zone_output) > 1:
-    #     return True
-    # return False
-
-
-# checks for collisions return:
-# True if collision free
-# False, first robot index that touches an obs if a robot touches an obs
-# False, robot_num if a robot touches another robot
-def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_width_square_arrangement, double_width_square_point_locator, do_single=False, robot_idx=0, first_invalid_idx=0):
-    # check for obs collision
-    if do_single:
-        if robot_idx < first_invalid_idx:
-            robots_to_check = []
-        elif robot_idx > first_invalid_idx:
-            robots_to_check = [robot_idx]
-        else:
-            return False, robot_idx
-    else:
-        robots_to_check = [i for i in range(robot_num)]
-    for i in robots_to_check:
-        if do_intersect(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1]))):
-            return False, i
-        # zone_output = []
-        # zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
-        # if len(zone_output) > 1:
-        #     return False, i
-    # check for robot to robot collision
-    if not do_single:
-        for i in range(robot_num):
-            for j in range(i + 1, robot_num):
-                if two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
-                    return False, robot_num
-    else:
-        for j in range(robot_num):
-            if j == robot_idx:
-                continue
-            if two_robot_intersect(p1, p2, robot_idx, j, double_width_square_arrangement, double_width_square_point_locator):
-                return False, robot_num
-    return True, 0
-
-
-def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator):
+def try_connect_to_dest(graph, tree, dest_point, collision_detector):
     nn = k_nn(tree, k_nearest, dest_point, FT(0))
     for neighbor in nn:
-        free, x = path_collision_free(point_locator, robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator)
+        free,x = collision_detector.path_collision_free(neighbor[0], dest_point)
         if free:
-            graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
+            graph[dest_point] = RrtNode(dest_point, graph[neighbor[0]])
             return True
     return False
 
@@ -240,32 +236,24 @@ def get_origin_robot_coord(width):
 
 
 def generate_path(path, robots, obstacles, destination):
-    # random.seed(0) #  for tests
+    random.seed(0) #  for tests
     start = time.time()
     robot_num = len(robots)
     assert(len(destination) == robot_num)
+    robot_width = FT(1)
     for i in range(robot_num):
-        robot_width = robots[i][1].x() - robots[i][0].x()
-        assert(robot_width == FT(1))
+        curr_robot_width = robots[i][1].x() - robots[i][0].x()
+        assert(curr_robot_width == FT(1))
     do_use_single_robot_movement = False
-    # init obs for collision detection
-    one_width_square = Polygon_2(get_origin_robot_coord(robot_width))
-    double_width_square = Polygon_with_holes_2(Polygon_2(get_origin_robot_coord(FT(2)*robot_width)))
-    inflated_obstacles = [Polygon_2([p for p in obs]) for obs in obstacles]
-    c_space_obstacles = [minkowski_sum_by_full_convolution_2(one_width_square, obs) for obs in inflated_obstacles]
-    c_space_arrangements = [polygon_with_holes_to_arrangement(obs) for obs in c_space_obstacles]
-    obstacles_arrangement = overlay_multiple_arrangements(c_space_arrangements, merge_faces_by_freespace_flag)
-    obstacles_point_locator = Arr_trapezoid_ric_point_location(obstacles_arrangement)
-    double_width_square_arrangement = polygon_with_holes_to_arrangement(double_width_square)
-    double_width_square_point_locator = Arr_trapezoid_ric_point_location(double_width_square_arrangement)
-
+    collision_detector = CollisionDetector(robot_width, obstacles, robot_num)
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
     start_ref_points = [get_square_mid(robot) for robot in robots]
     target_ref_points = [[dest.x(), dest.y()] for dest in destination]
     start_point = Point_d(2*robot_num, sum(start_ref_points, []))
     dest_point = Point_d(2*robot_num, sum(target_ref_points, []))
+
     vertices = [start_point]
-    graph = {start_point:RRT_Node(start_point)}
+    graph = {start_point: RrtNode(start_point)}
     tree = Kd_tree(vertices)
     while True:
         print("new batch, time= ", time.time() - start)
@@ -275,22 +263,23 @@ def generate_path(path, robots, obstacles, destination):
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
             new = steer(robot_num, near, p, steer_eta)
-            free, idx = path_collision_free(obstacles_point_locator, robot_num, near, new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator)
+            free, idx = collision_detector.path_collision_free(near, new)
             if free:
                 new_points.append(new)
                 vertices.append(new)
-                graph[new] = RRT_Node(new, graph[near])
+                graph[new] = RrtNode(new, graph[near])
             elif do_use_single_robot_movement:
                 for i in range(robot_num):
                     new_data = [near[j] for j in range(2*robot_num)]
                     new_data[2 * i] = new[2 * i]
                     new_data[2 * i + 1] = new[2 * i + 1]
                     my_new = Point_d(2*robot_num, new_data)
-                    free, aa = path_collision_free(obstacles_point_locator, robot_num, near, my_new, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator, do_single=True, robot_idx=i, first_invalid_idx=idx)
+                    free, x = collision_detector.path_collision_free(near, my_new,
+                                                                     do_single=True, robot_idx=i, first_invalid_idx=idx)
                     if free:
                         new_points.append(my_new)
                         vertices.append(my_new)
-                        graph[my_new] = RRT_Node(my_new, graph[near])
+                        graph[my_new] = RrtNode(my_new, graph[near])
 
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
@@ -298,16 +287,16 @@ def generate_path(path, robots, obstacles, destination):
         tree.insert(new_points)
         print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
-            #print("single robot movement")
+            # print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
-        if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, dest_point, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
+        if try_connect_to_dest(graph, tree, dest_point, collision_detector):
             break
     d_path = []
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2*i], dp[2*i+1]) for i in range(robot_num)])
-    #print("k_nearest = ", k_nearest)
-    #print("steer_eta = ", steer_eta)
-    #print("num_of_points_in_batch = ", num_of_points_in_batch)
-    #print("used single robot movement:", do_use_single_robot_movement)
+    # print("k_nearest = ", k_nearest)
+    # print("steer_eta = ", steer_eta)
+    # print("num_of_points_in_batch = ", num_of_points_in_batch)
+    # print("used single robot movement:", do_use_single_robot_movement)
     print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
