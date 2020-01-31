@@ -1,0 +1,552 @@
+D:\Dev\EX4\venv\Scripts\python.exe D:/Dev/EX4/polygons_scene.py
+loaded scene from scene1
+params:  0.2   0.01   1200
+finished, time=  173.0724995136261 vertices amount:  9030
+Generated path via ex42.generate_path
+finished, time=  217.7423598766327 vertices amount:  10334
+Generated path via ex42.generate_path
+finished, time=  192.53994417190552 vertices amount:  9049
+Generated path via ex42.generate_path
+finished, time=  114.99189567565918 vertices amount:  5416
+Generated path via ex42.generate_path
+finished, time=  47.473644495010376 vertices amount:  1986
+Generated path via ex42.generate_path
+params:  0.2   0.01   2400
+finished, time=  244.7156822681427 vertices amount:  6894
+Generated path via ex42.generate_path
+finished, time=  264.5574116706848 vertices amount:  8613
+Generated path via ex42.generate_path
+finished, time=  200.46104431152344 vertices amount:  5542
+Generated path via ex42.generate_path
+finished, time=  195.17731261253357 vertices amount:  5465
+Generated path via ex42.generate_path
+finished, time=  138.4014208316803 vertices amount:  3854
+Generated path via ex42.generate_path
+params:  0.4   0.01   1200
+finished, time=  61.36405611038208 vertices amount:  3627
+Generated path via ex42.generate_path
+finished, time=  36.407487869262695 vertices amount:  2198
+Generated path via ex42.generate_path
+finished, time=  43.600040912628174 vertices amount:  2452
+Generated path via ex42.generate_path
+finished, time=  29.646666049957275 vertices amount:  1839
+Generated path via ex42.generate_path
+finished, time=  48.8897705078125 vertices amount:  3133
+Generated path via ex42.generate_path
+params:  0.4   0.01   2400
+finished, time=  37.72866940498352 vertices amount:  1444
+Generated path via ex42.generate_path
+finished, time=  49.36247682571411 vertices amount:  1793
+Generated path via ex42.generate_path
+finished, time=  62.27949023246765 vertices amount:  2311
+Generated path via ex42.generate_path
+finished, time=  67.30038523674011 vertices amount:  2563
+Generated path via ex42.generate_path
+finished, time=  49.874160051345825 vertices amount:  2040
+Generated path via ex42.generate_path
+params:  0.6   0.01   1200
+finished, time=  21.608640670776367 vertices amount:  1241
+Generated path via ex42.generate_path
+finished, time=  24.411903142929077 vertices amount:  1431
+Generated path via ex42.generate_path
+finished, time=  11.1351158618927 vertices amount:  694
+Generated path via ex42.generate_path
+finished, time=  4.187410116195679 vertices amount:  287
+Generated path via ex42.generate_path
+finished, time=  23.576420307159424 vertices amount:  1359
+Generated path via ex42.generate_path
+params:  0.6   0.01   2400
+finished, time=  21.629626274108887 vertices amount:  871
+Generated path via ex42.generate_path
+finished, time=  36.869200706481934 vertices amount:  1322
+Generated path via ex42.generate_path
+finished, time=  38.72037410736084 vertices amount:  1377
+Generated path via ex42.generate_path
+finished, time=  27.94372272491455 vertices amount:  1070
+Generated path via ex42.generate_path
+finished, time=  36.91217398643494 vertices amount:  1307
+Generated path via ex42.generate_path
+params:  0.8   0.01   1200
+finished, time=  17.94190764427185 vertices amount:  1040
+Generated path via ex42.generate_path
+finished, time=  8.607675552368164 vertices amount:  491
+Generated path via ex42.generate_path
+finished, time=  15.857194423675537 vertices amount:  887
+Generated path via ex42.generate_path
+finished, time=  8.338843584060669 vertices amount:  464
+Generated path via ex42.generate_path
+finished, time=  23.062739610671997 vertices amount:  1202
+Generated path via ex42.generate_path
+params:  0.8   0.01   2400
+finished, time=  23.280603408813477 vertices amount:  703
+Generated path via ex42.generate_path
+finished, time=  22.99777913093567 vertices amount:  775
+Generated path via ex42.generate_path
+finished, time=  26.542587757110596 vertices amount:  816
+Generated path via ex42.generate_path
+finished, time=  30.807950019836426 vertices amount:  966
+Generated path via ex42.generate_path
+finished, time=  22.323195934295654 vertices amount:  751
+Generated path via ex42.generate_path
+params:  1   0.01   1200
+finished, time=  7.4603869915008545 vertices amount:  358
+Generated path via ex42.generate_path
+finished, time=  7.391429424285889 vertices amount:  345
+Generated path via ex42.generate_path
+finished, time=  11.350500583648682 vertices amount:  518
+Generated path via ex42.generate_path
+finished, time=  8.4532949924469 vertices amount:  377
+Generated path via ex42.generate_path
+finished, time=  13.025944948196411 vertices amount:  594
+Generated path via ex42.generate_path
+params:  1   0.01   2400
+finished, time=  23.33157181739807 vertices amount:  754
+Generated path via ex42.generate_path
+finished, time=  9.786947011947632 vertices amount:  314
+Generated path via ex42.generate_path
+finished, time=  23.522456169128418 vertices amount:  698
+Generated path via ex42.generate_path
+finished, time=  21.870476722717285 vertices amount:  674
+Generated path via ex42.generate_path
+finished, time=  7.6062963008880615 vertices amount:  291
+Generated path via ex42.generate_path
+params:  0.2   0.015   1200
+finished, time=  144.53162956237793 vertices amount:  8809
+Generated path via ex42.generate_path
+finished, time=  119.93837141990662 vertices amount:  6491
+Generated path via ex42.generate_path
+finished, time=  86.90825915336609 vertices amount:  4633
+Generated path via ex42.generate_path
+finished, time=  72.14638996124268 vertices amount:  4811
+Generated path via ex42.generate_path
+finished, time=  92.92356204986572 vertices amount:  6396
+Generated path via ex42.generate_path
+params:  0.2   0.015   2400
+finished, time=  170.3446662425995 vertices amount:  6162
+Generated path via ex42.generate_path
+finished, time=  228.14792704582214 vertices amount:  7457
+Generated path via ex42.generate_path
+finished, time=  266.06847763061523 vertices amount:  7420
+Generated path via ex42.generate_path
+finished, time=  275.4276907444 vertices amount:  7545
+Generated path via ex42.generate_path
+finished, time=  222.27855515480042 vertices amount:  5717
+Generated path via ex42.generate_path
+params:  0.4   0.015   1200
+finished, time=  52.569493770599365 vertices amount:  2234
+Generated path via ex42.generate_path
+finished, time=  58.539801836013794 vertices amount:  2547
+Generated path via ex42.generate_path
+finished, time=  38.30131506919861 vertices amount:  1954
+Generated path via ex42.generate_path
+finished, time=  53.096168756484985 vertices amount:  2500
+Generated path via ex42.generate_path
+finished, time=  58.35791516304016 vertices amount:  2507
+Generated path via ex42.generate_path
+params:  0.4   0.015   2400
+finished, time=  106.16135478019714 vertices amount:  2665
+Generated path via ex42.generate_path
+finished, time=  112.8142421245575 vertices amount:  2966
+Generated path via ex42.generate_path
+finished, time=  82.60891938209534 vertices amount:  2440
+Generated path via ex42.generate_path
+finished, time=  77.333181142807 vertices amount:  2235
+Generated path via ex42.generate_path
+finished, time=  98.9318265914917 vertices amount:  2652
+Generated path via ex42.generate_path
+params:  0.6   0.015   1200
+finished, time=  19.9566593170166 vertices amount:  902
+Generated path via ex42.generate_path
+finished, time=  36.41748094558716 vertices amount:  1580
+Generated path via ex42.generate_path
+finished, time=  33.36636805534363 vertices amount:  1343
+Generated path via ex42.generate_path
+finished, time=  33.71815061569214 vertices amount:  1416
+Generated path via ex42.generate_path
+finished, time=  35.72590899467468 vertices amount:  1532
+Generated path via ex42.generate_path
+params:  0.6   0.015   2400
+finished, time=  46.59418797492981 vertices amount:  1218
+Generated path via ex42.generate_path
+finished, time=  47.655532121658325 vertices amount:  1251
+Generated path via ex42.generate_path
+finished, time=  55.28185820579529 vertices amount:  1447
+Generated path via ex42.generate_path
+finished, time=  71.89754152297974 vertices amount:  1788
+Generated path via ex42.generate_path
+finished, time=  79.76267886161804 vertices amount:  2022
+Generated path via ex42.generate_path
+params:  0.8   0.015   1200
+finished, time=  18.189751863479614 vertices amount:  820
+Generated path via ex42.generate_path
+finished, time=  16.964511156082153 vertices amount:  698
+Generated path via ex42.generate_path
+finished, time=  20.28545594215393 vertices amount:  834
+Generated path via ex42.generate_path
+finished, time=  14.783859014511108 vertices amount:  633
+Generated path via ex42.generate_path
+finished, time=  16.102043390274048 vertices amount:  735
+Generated path via ex42.generate_path
+params:  0.8   0.015   2400
+finished, time=  30.641053915023804 vertices amount:  799
+Generated path via ex42.generate_path
+finished, time=  34.246824502944946 vertices amount:  919
+Generated path via ex42.generate_path
+finished, time=  28.75521969795227 vertices amount:  786
+Generated path via ex42.generate_path
+finished, time=  22.426132678985596 vertices amount:  688
+Generated path via ex42.generate_path
+finished, time=  17.992873907089233 vertices amount:  596
+Generated path via ex42.generate_path
+params:  1   0.015   1200
+finished, time=  13.163860559463501 vertices amount:  642
+Generated path via ex42.generate_path
+finished, time=  11.651795148849487 vertices amount:  543
+Generated path via ex42.generate_path
+finished, time=  21.31781792640686 vertices amount:  1033
+Generated path via ex42.generate_path
+finished, time=  9.26826810836792 vertices amount:  392
+Generated path via ex42.generate_path
+finished, time=  18.203744173049927 vertices amount:  854
+Generated path via ex42.generate_path
+params:  1   0.015   2400
+finished, time=  18.413612842559814 vertices amount:  573
+Generated path via ex42.generate_path
+finished, time=  19.38901114463806 vertices amount:  686
+Generated path via ex42.generate_path
+finished, time=  25.879997491836548 vertices amount:  716
+Generated path via ex42.generate_path
+finished, time=  24.490856170654297 vertices amount:  779
+Generated path via ex42.generate_path
+finished, time=  25.62215495109558 vertices amount:  723
+Generated path via ex42.generate_path
+params:  0.2   0.02   1200
+finished, time=  158.17019629478455 vertices amount:  8006
+Generated path via ex42.generate_path
+finished, time=  138.87612628936768 vertices amount:  6122
+Generated path via ex42.generate_path
+finished, time=  154.57941579818726 vertices amount:  7160
+Generated path via ex42.generate_path
+finished, time=  117.99603724479675 vertices amount:  5512
+Generated path via ex42.generate_path
+finished, time=  104.39544773101807 vertices amount:  5341
+Generated path via ex42.generate_path
+params:  0.2   0.02   2400
+finished, time=  166.06431484222412 vertices amount:  4823
+Generated path via ex42.generate_path
+finished, time=  216.61905479431152 vertices amount:  5789
+Generated path via ex42.generate_path
+finished, time=  260.26206827163696 vertices amount:  6874
+Generated path via ex42.generate_path
+finished, time=  233.68450331687927 vertices amount:  6071
+Generated path via ex42.generate_path
+finished, time=  257.3668577671051 vertices amount:  7581
+Generated path via ex42.generate_path
+params:  0.4   0.02   1200
+finished, time=  58.583775997161865 vertices amount:  3051
+Generated path via ex42.generate_path
+finished, time=  66.72774028778076 vertices amount:  3065
+Generated path via ex42.generate_path
+finished, time=  48.80582118034363 vertices amount:  2389
+Generated path via ex42.generate_path
+finished, time=  63.04601573944092 vertices amount:  3021
+Generated path via ex42.generate_path
+finished, time=  83.77120089530945 vertices amount:  3626
+Generated path via ex42.generate_path
+params:  0.4   0.02   2400
+finished, time=  48.029301404953 vertices amount:  1333
+Generated path via ex42.generate_path
+finished, time=  96.47434568405151 vertices amount:  2596
+Generated path via ex42.generate_path
+finished, time=  33.27842164039612 vertices amount:  1137
+Generated path via ex42.generate_path
+finished, time=  85.29725766181946 vertices amount:  2243
+Generated path via ex42.generate_path
+finished, time=  102.384690284729 vertices amount:  2881
+Generated path via ex42.generate_path
+params:  0.6   0.02   1200
+finished, time=  37.653717041015625 vertices amount:  1868
+Generated path via ex42.generate_path
+finished, time=  24.259999752044678 vertices amount:  1159
+Generated path via ex42.generate_path
+finished, time=  26.86938452720642 vertices amount:  1374
+Generated path via ex42.generate_path
+finished, time=  19.68282914161682 vertices amount:  999
+Generated path via ex42.generate_path
+finished, time=  36.130658864974976 vertices amount:  1818
+Generated path via ex42.generate_path
+params:  0.6   0.02   2400
+finished, time=  51.59009861946106 vertices amount:  1477
+Generated path via ex42.generate_path
+finished, time=  24.06811761856079 vertices amount:  773
+Generated path via ex42.generate_path
+finished, time=  44.741334676742554 vertices amount:  1277
+Generated path via ex42.generate_path
+finished, time=  37.990508794784546 vertices amount:  1063
+Generated path via ex42.generate_path
+finished, time=  52.83033323287964 vertices amount:  1413
+Generated path via ex42.generate_path
+params:  0.8   0.02   1200
+finished, time=  21.98340654373169 vertices amount:  979
+Generated path via ex42.generate_path
+finished, time=  18.3616464138031 vertices amount:  773
+Generated path via ex42.generate_path
+finished, time=  9.647034168243408 vertices amount:  434
+Generated path via ex42.generate_path
+finished, time=  17.454207181930542 vertices amount:  749
+Generated path via ex42.generate_path
+finished, time=  19.90769052505493 vertices amount:  851
+Generated path via ex42.generate_path
+params:  0.8   0.02   2400
+finished, time=  28.936107397079468 vertices amount:  742
+Generated path via ex42.generate_path
+finished, time=  23.116705656051636 vertices amount:  702
+Generated path via ex42.generate_path
+finished, time=  49.662291288375854 vertices amount:  1196
+Generated path via ex42.generate_path
+finished, time=  28.784202337265015 vertices amount:  755
+Generated path via ex42.generate_path
+finished, time=  25.27637004852295 vertices amount:  641
+Generated path via ex42.generate_path
+params:  1   0.02   1200
+finished, time=  13.773481845855713 vertices amount:  528
+Generated path via ex42.generate_path
+finished, time=  5.880364179611206 vertices amount:  245
+Generated path via ex42.generate_path
+finished, time=  8.738595962524414 vertices amount:  397
+Generated path via ex42.generate_path
+finished, time=  14.41708493232727 vertices amount:  666
+Generated path via ex42.generate_path
+finished, time=  12.234434843063354 vertices amount:  591
+Generated path via ex42.generate_path
+params:  1   0.02   2400
+finished, time=  24.077112197875977 vertices amount:  645
+Generated path via ex42.generate_path
+finished, time=  33.06955146789551 vertices amount:  792
+Generated path via ex42.generate_path
+finished, time=  34.99436116218567 vertices amount:  876
+Generated path via ex42.generate_path
+finished, time=  27.242156505584717 vertices amount:  710
+Generated path via ex42.generate_path
+finished, time=  25.678121089935303 vertices amount:  678
+Generated path via ex42.generate_path
+params:  0.2   0.025   1200
+finished, time=  124.28115200996399 vertices amount:  6555
+Generated path via ex42.generate_path
+finished, time=  163.43593955039978 vertices amount:  8199
+Generated path via ex42.generate_path
+finished, time=  180.81219458580017 vertices amount:  8494
+Generated path via ex42.generate_path
+finished, time=  135.83000946044922 vertices amount:  6223
+Generated path via ex42.generate_path
+finished, time=  135.627135515213 vertices amount:  6196
+Generated path via ex42.generate_path
+params:  0.2   0.025   2400
+finished, time=  267.6005301475525 vertices amount:  7052
+Generated path via ex42.generate_path
+finished, time=  190.21937942504883 vertices amount:  5549
+Generated path via ex42.generate_path
+finished, time=  247.7038333415985 vertices amount:  6996
+Generated path via ex42.generate_path
+finished, time=  199.00494599342346 vertices amount:  5705
+Generated path via ex42.generate_path
+finished, time=  188.32355093955994 vertices amount:  4596
+Generated path via ex42.generate_path
+params:  0.4   0.025   1200
+finished, time=  39.07383942604065 vertices amount:  2031
+Generated path via ex42.generate_path
+finished, time=  43.598042726516724 vertices amount:  2417
+Generated path via ex42.generate_path
+finished, time=  35.04433012008667 vertices amount:  2041
+Generated path via ex42.generate_path
+finished, time=  54.24945521354675 vertices amount:  2656
+Generated path via ex42.generate_path
+finished, time=  41.41539144515991 vertices amount:  2066
+Generated path via ex42.generate_path
+params:  0.4   0.025   2400
+finished, time=  107.50452470779419 vertices amount:  2948
+Generated path via ex42.generate_path
+finished, time=  97.90446257591248 vertices amount:  2467
+Generated path via ex42.generate_path
+finished, time=  79.39190864562988 vertices amount:  2048
+Generated path via ex42.generate_path
+finished, time=  68.67553377151489 vertices amount:  1848
+Generated path via ex42.generate_path
+finished, time=  59.78503346443176 vertices amount:  1666
+Generated path via ex42.generate_path
+params:  0.6   0.025   1200
+finished, time=  31.78634524345398 vertices amount:  1437
+Generated path via ex42.generate_path
+finished, time=  15.301538228988647 vertices amount:  772
+Generated path via ex42.generate_path
+finished, time=  32.991600036621094 vertices amount:  1485
+Generated path via ex42.generate_path
+finished, time=  29.080017805099487 vertices amount:  1462
+Generated path via ex42.generate_path
+finished, time=  22.495089292526245 vertices amount:  1090
+Generated path via ex42.generate_path
+params:  0.6   0.025   2400
+finished, time=  37.86358714103699 vertices amount:  1057
+Generated path via ex42.generate_path
+finished, time=  60.65249586105347 vertices amount:  1501
+Generated path via ex42.generate_path
+finished, time=  38.75103831291199 vertices amount:  1090
+Generated path via ex42.generate_path
+finished, time=  41.46136403083801 vertices amount:  1167
+Generated path via ex42.generate_path
+finished, time=  23.268611431121826 vertices amount:  740
+Generated path via ex42.generate_path
+params:  0.8   0.025   1200
+finished, time=  21.196893453598022 vertices amount:  1027
+Generated path via ex42.generate_path
+finished, time=  21.00201153755188 vertices amount:  1084
+Generated path via ex42.generate_path
+finished, time=  23.808279991149902 vertices amount:  1134
+Generated path via ex42.generate_path
+finished, time=  16.906545877456665 vertices amount:  888
+Generated path via ex42.generate_path
+finished, time=  12.86904263496399 vertices amount:  647
+Generated path via ex42.generate_path
+params:  0.8   0.025   2400
+finished, time=  36.81123733520508 vertices amount:  975
+Generated path via ex42.generate_path
+finished, time=  10.392573833465576 vertices amount:  355
+Generated path via ex42.generate_path
+finished, time=  27.011297702789307 vertices amount:  819
+Generated path via ex42.generate_path
+finished, time=  31.628442525863647 vertices amount:  899
+Generated path via ex42.generate_path
+finished, time=  26.881377458572388 vertices amount:  798
+Generated path via ex42.generate_path
+params:  1   0.025   1200
+finished, time=  5.976304292678833 vertices amount:  300
+Generated path via ex42.generate_path
+finished, time=  4.474233627319336 vertices amount:  228
+Generated path via ex42.generate_path
+finished, time=  14.835826635360718 vertices amount:  673
+Generated path via ex42.generate_path
+finished, time=  19.900695323944092 vertices amount:  893
+Generated path via ex42.generate_path
+finished, time=  8.699621200561523 vertices amount:  366
+Generated path via ex42.generate_path
+params:  1   0.025   2400
+finished, time=  23.946192502975464 vertices amount:  622
+Generated path via ex42.generate_path
+finished, time=  24.72371244430542 vertices amount:  655
+Generated path via ex42.generate_path
+finished, time=  25.815037488937378 vertices amount:  633
+Generated path via ex42.generate_path
+finished, time=  26.000924110412598 vertices amount:  665
+Generated path via ex42.generate_path
+finished, time=  24.957566499710083 vertices amount:  638
+Generated path via ex42.generate_path
+params:  0.2   0.03   1200
+finished, time=  192.88373064994812 vertices amount:  9171
+Generated path via ex42.generate_path
+finished, time=  126.97848391532898 vertices amount:  5933
+Generated path via ex42.generate_path
+finished, time=  124.66391372680664 vertices amount:  5664
+Generated path via ex42.generate_path
+finished, time=  100.68774032592773 vertices amount:  5363
+Generated path via ex42.generate_path
+finished, time=  143.45029997825623 vertices amount:  7476
+Generated path via ex42.generate_path
+params:  0.2   0.03   2400
+finished, time=  209.01375651359558 vertices amount:  5837
+Generated path via ex42.generate_path
+finished, time=  230.4634940624237 vertices amount:  5812
+Generated path via ex42.generate_path
+finished, time=  208.58802223205566 vertices amount:  5515
+Generated path via ex42.generate_path
+finished, time=  242.83684253692627 vertices amount:  7669
+Generated path via ex42.generate_path
+finished, time=  234.4910044670105 vertices amount:  6447
+Generated path via ex42.generate_path
+params:  0.4   0.03   1200
+finished, time=  64.37219572067261 vertices amount:  2943
+Generated path via ex42.generate_path
+finished, time=  36.643341064453125 vertices amount:  1787
+Generated path via ex42.generate_path
+finished, time=  53.688801288604736 vertices amount:  2426
+Generated path via ex42.generate_path
+finished, time=  30.953859329223633 vertices amount:  1504
+Generated path via ex42.generate_path
+finished, time=  40.164164543151855 vertices amount:  1845
+Generated path via ex42.generate_path
+params:  0.4   0.03   2400
+finished, time=  78.0647280216217 vertices amount:  2112
+Generated path via ex42.generate_path
+finished, time=  53.791738986968994 vertices amount:  1778
+Generated path via ex42.generate_path
+finished, time=  40.83574938774109 vertices amount:  1170
+Generated path via ex42.generate_path
+finished, time=  76.60263180732727 vertices amount:  2340
+Generated path via ex42.generate_path
+finished, time=  88.41033172607422 vertices amount:  2580
+Generated path via ex42.generate_path
+params:  0.6   0.03   1200
+finished, time=  19.271085262298584 vertices amount:  961
+Generated path via ex42.generate_path
+finished, time=  33.25643539428711 vertices amount:  1649
+Generated path via ex42.generate_path
+finished, time=  17.800992488861084 vertices amount:  890
+Generated path via ex42.generate_path
+finished, time=  15.859193325042725 vertices amount:  866
+Generated path via ex42.generate_path
+finished, time=  22.98378825187683 vertices amount:  1151
+Generated path via ex42.generate_path
+params:  0.6   0.03   2400
+finished, time=  56.62598657608032 vertices amount:  1669
+Generated path via ex42.generate_path
+finished, time=  53.771750926971436 vertices amount:  1475
+Generated path via ex42.generate_path
+finished, time=  55.88244557380676 vertices amount:  1463
+Generated path via ex42.generate_path
+finished, time=  28.08963131904602 vertices amount:  752
+Generated path via ex42.generate_path
+finished, time=  31.126752853393555 vertices amount:  894
+Generated path via ex42.generate_path
+params:  0.8   0.03   1200
+finished, time=  9.691007614135742 vertices amount:  473
+Generated path via ex42.generate_path
+finished, time=  13.052929401397705 vertices amount:  638
+Generated path via ex42.generate_path
+finished, time=  12.038554430007935 vertices amount:  597
+Generated path via ex42.generate_path
+finished, time=  15.748262405395508 vertices amount:  695
+Generated path via ex42.generate_path
+finished, time=  12.188462734222412 vertices amount:  554
+Generated path via ex42.generate_path
+params:  0.8   0.03   2400
+finished, time=  27.7168607711792 vertices amount:  785
+Generated path via ex42.generate_path
+finished, time=  29.950480699539185 vertices amount:  751
+Generated path via ex42.generate_path
+finished, time=  45.31597948074341 vertices amount:  1134
+Generated path via ex42.generate_path
+finished, time=  30.366222858428955 vertices amount:  797
+Generated path via ex42.generate_path
+finished, time=  22.660987615585327 vertices amount:  658
+Generated path via ex42.generate_path
+params:  1   0.03   1200
+finished, time=  11.280024766921997 vertices amount:  494
+Generated path via ex42.generate_path
+finished, time=  15.478429555892944 vertices amount:  684
+Generated path via ex42.generate_path
+finished, time=  17.02946949005127 vertices amount:  703
+Generated path via ex42.generate_path
+finished, time=  12.335373401641846 vertices amount:  566
+Generated path via ex42.generate_path
+finished, time=  9.400187969207764 vertices amount:  411
+Generated path via ex42.generate_path
+params:  1   0.03   2400
+finished, time=  25.612162113189697 vertices amount:  676
+Generated path via ex42.generate_path
+finished, time=  22.247243404388428 vertices amount:  603
+Generated path via ex42.generate_path
+finished, time=  26.140836238861084 vertices amount:  662
+Generated path via ex42.generate_path
+finished, time=  29.22093152999878 vertices amount:  763
+Generated path via ex42.generate_path
+finished, time=  7.402423143386841 vertices amount:  273
+Generated path via ex42.generate_path
