@@ -138,25 +138,13 @@ class CollisionDetector:
         return True, 0
 
 
-interweave = lambda l1,l2:[m for pair in zip(l1, l2) for m in pair]
-
-
-# TODO assume sqr and use [blah for range]
-def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
-    v = []
-    num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
-    for i in range(num_of_points - num_of_points_in_dest_direction):
-        coords_x = [FT(random.uniform(min_x, max_x)) for i in range(robot_num)]
-        coords_y = [FT(random.uniform(min_y, max_y)) for i in range(robot_num)]
-        coords = interweave(coords_x, coords_y)
-        v.append(Point_d(2*robot_num, coords))
-    # we should try and steer to goal with some probability
-    for i in range(num_of_points_in_dest_direction):
-        coords_x = [(FT(random.uniform(min_x, max_x)) + dest_point[2*i])/FT(2)for i in range(robot_num)]
-        coords_y = [(FT(random.uniform(min_y, max_y)) + dest_point[2*i+1])/FT(2)for i in range(robot_num)]
-        coords = interweave(coords_x, coords_y)
-        v.append(Point_d(2*robot_num, coords))
-    return v
+def get_batch(robot_num, num_of_points, min_coord, max_coord, dest_p):
+    # num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
+    # v1 = [Point_d(2*robot_num,
+    #              [(FT(random.uniform(min_coord, max_coord))+dest_p[i])/FT(2) for i in range(2*robot_num)])
+    #      for j in range(num_of_points_in_dest_direction)]
+    return [Point_d(2*robot_num, [FT(random.uniform(min_coord, max_coord)) for i in range(2*robot_num)])
+            for j in range(num_of_points)]
 
 
 def get_min_max(obstacles):
@@ -236,17 +224,20 @@ def get_origin_robot_coord(width):
 
 
 def generate_path(path, robots, obstacles, destination):
-    random.seed(0) #  for tests
+    # random.seed(0)  # for tests
     start = time.time()
     robot_num = len(robots)
-    assert(len(destination) == robot_num)
+    assert len(destination) == robot_num, "robot amount and destination amount mismatch"
     robot_width = FT(1)
     for i in range(robot_num):
         curr_robot_width = robots[i][1].x() - robots[i][0].x()
-        assert(curr_robot_width == FT(1))
+        assert curr_robot_width == FT(1), "robot width is assumed to be 1"
     do_use_single_robot_movement = False
     collision_detector = CollisionDetector(robot_width, obstacles, robot_num)
     max_x, max_y, min_x, min_y = get_min_max(obstacles)
+    assert min_x == min_y and max_x == max_y, "scene should be square"
+    min_coord = min(min_x, min_y)
+    max_coord = min(max_x, max_y)
     start_ref_points = [get_square_mid(robot) for robot in robots]
     target_ref_points = [[dest.x(), dest.y()] for dest in destination]
     start_point = Point_d(2*robot_num, sum(start_ref_points, []))
@@ -258,7 +249,7 @@ def generate_path(path, robots, obstacles, destination):
     while True:
         print("new batch, time= ", time.time() - start)
         # I use a batch so that the algorithm can be iterative
-        batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, dest_point)
+        batch = get_batch(robot_num, num_of_points_in_batch, min_coord, max_coord, dest_point)
         new_points = []
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
