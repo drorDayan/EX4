@@ -206,7 +206,7 @@ class GUI(object):
     anim = QPauseAnimation(duration)
     return anim
 
-  def parallel_animation(self, *animations):
+  def parallel_animation(self, animations):
     group = QParallelAnimationGroup()
     for anim in animations:
       group.addAnimation(anim)

@@ -1,0 +1,30 @@
+D:\Dev\EX4\venv\Scripts\python.exe D:/Dev/EX4/polygons_scene.py
+loaded scene from scenes/scene3_very_hard_multi
+new batch, time=  0.14955711364746094
+vertices amount:  1
+new batch, time=  1.614640235900879
+vertices amount:  216
+new batch, time=  22.406063556671143
+vertices amount:  376
+new batch, time=  41.46805024147034
+vertices amount:  678
+new batch, time=  72.0373227596283
+vertices amount:  1002
+new batch, time=  106.05829954147339
+vertices amount:  1309
+new batch, time=  142.80402159690857
+vertices amount:  1597
+new batch, time=  177.98397064208984
+vertices amount:  1834
+new batch, time=  207.94779181480408
+vertices amount:  2145
+new batch, time=  245.35574078559875
+vertices amount:  2457
+new batch, time=  283.66627740859985
+vertices amount:  2803
+new batch, time=  324.3994333744049
+vertices amount:  3141
+new batch, time=  363.9476091861725
+vertices amount:  3549
+finished, time=  408.38974618911743 vertices amount:  3549 steer_eta =  0.6
+Valid path:  True

@@ -10,17 +10,18 @@ offset = -Vector_2(FT(0.5), FT(0.5))
 
 class Polygons_scene():
   def __init__(self):
-    self.robots = [None, None]
+    self.robot_num = 0
+    self.robots = []
     self.obstacles = []
-    self.gui_robots = [None, None]
+    self.gui_robots = []
     self.gui_obstacles = []
-    self.destinations = [None, None]
-    self.gui_destinations = [None, None]
+    self.destinations = []
+    self.gui_destinations = []
     self.path = []
 
   def draw_scene(self):
     gui.clear_scene()
-    colors = [Qt.yellow, Qt.green]
+    colors = [Qt.yellow, Qt.green, Qt.black, Qt.blue, Qt.darkGreen, Qt.red, Qt.magenta, Qt.darkMagenta, Qt.darkGreen, Qt.darkCyan, Qt.cyan]
     for i in range(len(self.robots)):
       if (self.robots[i] != None):
         self.gui_robots[i] = gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], colors[i])
@@ -33,19 +34,22 @@ class Polygons_scene():
 
   def load_scene(self, filename):
     scene = read_input.read_polygon_scene(filename)
+    self.robot_num = scene[0]
     # gui.set_field(2, " ".join(scene[0]))
-    destinations = [None, None]
-    destinations[0] = scene[0]
-    destinations[1] = scene[1]
-    s0 = str(destinations[0].x().exact()) + " " + str(destinations[0].y().exact())
-    s1 = str(destinations[1].x().exact()) + " " + str(destinations[1].y().exact())
-    gui.set_field(1, s0)
-    gui.set_field(2, s1)
+    destinations = [None for i in range(self.robot_num)]
+    self.gui_destinations = [None for i in range(self.robot_num)]
+    s = []
+    for i in range(self.robot_num):
+      destinations[i] = scene[i+1]
+      # s.append(str(destinations[i].x().exact()) + " " + str(destinations[i].y().exact()))
+      # gui.set_field(i+5, s[i])
     self.set_destinations(destinations)
-    self.robots[0] = scene[2]
-    self.robots[1] = scene[3]
+    self.robots = [None for i in range(self.robot_num)]
+    self.gui_robots = [None for i in range(self.robot_num)]
+    for i in range(self.robot_num):
+      self.robots[i] = scene[i+self.robot_num+1]
     self.obstacles = []
-    for i in range(4, len(scene)):
+    for i in range(1+2*self.robot_num, len(scene)):
       self.obstacles.append(scene[i])
     gui.clear_queue()
     self.draw_scene()
@@ -60,45 +64,36 @@ class Polygons_scene():
 
   def set_up_animation(self):
     self.draw_scene()
+    colors = [Qt.yellow, Qt.green, Qt.black, Qt.blue, Qt.darkGreen, Qt.red, Qt.magenta, Qt.darkMagenta, Qt.darkGreen,
+              Qt.darkCyan, Qt.cyan]
     if len(self.path) == 0:
       return
     if len(self.path) == 1:
-      start = point_2_to_xy(self.path[0][0] + offset)
-      anim0 = gui.linear_translation_animation(self.gui_robots[0], *start, *start)
-      start = point_2_to_xy(self.path[0][1] + offset)
-      anim1 = gui.linear_translation_animation(self.gui_robots[1], *start, *start)
-      anim = gui.parallel_animation(anim0, anim1)
-      gui.queue_animation(anim)
+      return
     else:
       for i in range(len(self.path) - 1):
-        start0 = point_2_to_xy(self.path[i][0])
-        end0 = point_2_to_xy(self.path[i+1][0])
-        s = gui.add_segment(*start0, *end0, Qt.yellow)
-        start0 = point_2_to_xy(self.path[i][0] + offset)
-        end0 = point_2_to_xy(self.path[i + 1][0] + offset)
-        s.line.setZValue(2)
-        anim0 = gui.linear_translation_animation(self.gui_robots[0], *start0, *end0)
-
-        start1 = point_2_to_xy(self.path[i][1])
-        end1 = point_2_to_xy(self.path[i + 1][1])
-        s = gui.add_segment(*start1, *end1, Qt.green)
-        start1 = point_2_to_xy(self.path[i][1] + offset)
-        end1 = point_2_to_xy(self.path[i + 1][1] + offset)
-        s.line.setZValue(2)
-        anim1 = gui.linear_translation_animation(self.gui_robots[1], *start1, *end1)
-        anim = gui.parallel_animation(anim0, anim1)
+        anim_l = [None for i in range(self.robot_num)]
+        for r_i in range(self.robot_num):
+          start = point_2_to_xy(self.path[i][r_i])
+          end = point_2_to_xy(self.path[i+1][r_i])
+          s = gui.add_segment(*start, *end, colors[r_i])
+          start = point_2_to_xy(self.path[i][r_i] + offset)
+          end = point_2_to_xy(self.path[i + 1][r_i] + offset)
+          s.line.setZValue(2)
+          anim_l[r_i] = gui.linear_translation_animation(self.gui_robots[r_i], *start, *end)
+        anim = gui.parallel_animation(anim_l)
         gui.queue_animation(anim)
 
   def is_path_valid(self):
     check22 = True
     if self.path == None: return False
     if len(self.path) == 0: return False
-    robot_polygons = [None, None]
+    robot_polygons = [None for i in range(self.robot_num)]
     path_polygons = []
     if len(self.path) > 1:
       for i in range(len(self.path) - 1):
-        source = [None, None]
-        target = [None, None]
+        source = [None for i in range(self.robot_num)]
+        target = [None for i in range(self.robot_num)]
         for j in range(len(self.robots)):
           robot_polygons[j] = Polygon_2(self.robots[j])
           source[j] = self.path[i][j]
@@ -109,7 +104,9 @@ class Polygons_scene():
           else:
             pwh = ms_polygon_segment.minkowski_sum_polygon_point(robot_polygons[j], source[j])
           path_polygons.append(pwh)
-        if linear_path_intersection_test.do_intersect(robot_polygons[0], robot_polygons[1], source, target): check22 = False
+        for j in range(len(self.robots)):
+          for k in range(j, self.robot_num):
+            if linear_path_intersection_test.do_intersect(robot_polygons[j], robot_polygons[k], source, target): check22 = False
 
     obstacle_polygons = []
     for obs in self.obstacles:
@@ -133,20 +130,24 @@ class Polygons_scene():
 
 
     # check that the origin matches the first point in the path
-    check01 = True if self.robots[0][0] - offset == self.path[0][0] else False
-    check02 = True if self.robots[1][0] - offset == self.path[0][1] else False
+    check01 = True
+    for i in range(self.robot_num):
+      if self.robots[i][0] - offset != self.path[0][i]:
+        check01 = False
     # check that the destination matches the last point in the path
-    check11 = True if self.destinations[0] == self.path[-1][0] else False
-    check12 = True if self.destinations[1] == self.path[-1][1] else False
+    check11 = True
+    for i in range(self.robot_num):
+      if self.destinations[i] != self.path[-1][i]:
+        check11 = False
     #check that there are no collisions
     check21 = True if not path_set.do_intersect(obstacles_set) else False
-    res = (check01 and check02 and check11 and check12 and check21 and check22)
+    res = (check01 and check11 and check21 and check22)
     print("Valid path: ", res)
-    if check01 == False or check02 == False:
+    if check01 == False :
       print("Origin mismatch")
       print(self.robots[0][0] - offset, self.robots[1][0] - offset)
       print(self.path[0][0], self.path[0][1])
-    if check11 == False or check12 == False:
+    if check11 == False :
       print("Destination mismatch")
       print(self.destinations[0], self.destinations[1])
       print(self.path[-1][0], self.path[-1][1])
@@ -158,8 +159,8 @@ class Polygons_scene():
 
 def set_up_scene():
   gui.clear_scene()
-  ps.destinations = [None, None]
-  ps.gui_destinations = [None, None]
+  # ps.destinations = [None, None]
+  # ps.gui_destinations = [None, None]
   scene_file = gui.get_field(0)
   ps.load_scene(scene_file)
   print("loaded scene from", scene_file)
@@ -169,8 +170,10 @@ def generate_path():
   gui.clear_queue()
   path_name = gui.get_field(3)
   gp = importlib.import_module(path_name)
+  # for steer_eta in [FT(0.1), FT(0.2), FT(0.3), FT(0.4), FT(0.5), FT(0.6), FT(0.7), FT(0.8), FT(0.9), FT(1.0), FT(1.1), FT(1.2), FT(1.3), FT(1.4), FT(1.5)]:
+  #   for i in range(10):
   gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations)
-  print("Generated path via", path_name + ".generate_path")
+  # print("Generated path via", path_name + ".generate_path")
   ps.set_up_animation()
 
 def load_path():
@@ -212,7 +215,7 @@ if __name__ == "__main__":
   gui = GUI()
   ps = Polygons_scene()
   gui.set_program_name("Multi-robot Motion Planning")
-  gui.set_field(0, "scene0")
+  gui.set_field(0, "scenes/scene1")
   gui.set_field(3, "ex42")
   gui.set_field(4, "path0.txt")
   #gui.set_field(5, "path_out.txt")

@@ -5,7 +5,7 @@ from math import sqrt
 
 # Configurable Variables: #
 
-k_nearest = 50
+k_nearest = 10
 steer_eta = FT(0.6)
 num_of_points_in_batch = 1200
 single_robot_movement_if_less_then = 20
@@ -16,10 +16,10 @@ FREESPACE = 'freespace'
 
 
 class RRT_Node():
-    def __init__(self, pt, pr=None, cst=0):
+    def __init__(self, pt, pr=None, n=0):
         self.point = pt
         self.parent = pr
-        self.cost = cst  # Will be used to store distance to this point, etc.
+        self.nval = n  # Will be used to store distance to this point, etc.
 
     def get_path_to_here(self, ret_path):
         cur = self
@@ -83,6 +83,7 @@ def is_in_free_face(point_locator, point):
 interweave = lambda l1,l2:[m for pair in zip(l1, l2) for m in pair]
 
 
+# TODO assume sqr and use [blah for range]
 def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points/5)
@@ -118,7 +119,9 @@ def k_nn(tree, k, query, eps):
     search_nearest = True
     sort_neighbors = True
     # TODO: Experiment with a custom distance (i.e. max between the two 2D-Euclidean distances, I feel like that makes more sense)
+    #print("pre search")
     search = K_neighbor_search(tree, query, k, eps, search_nearest, Euclidean_distance(), sort_neighbors)
+    #print("post search")
     lst = []
     search.k_neighbors(lst)
     return lst
@@ -138,6 +141,7 @@ def get_nearest(robot_num, tree, new_points, rand):
     if len(new_points) == 0:
         return nn_in_tree[0]
     # check distance from new points
+    #  TODO make sure it works
     dist = [distance_squared(robot_num, rand, point) for point in new_points]
     min_dist = dist[0]
     min_i = 0
@@ -171,11 +175,12 @@ def get_normal_movement_vector(p1, p2, i, j):
 
 def two_robot_intersect(p1, p2, i, j, double_width_square_arrangement, double_width_square_point_locator):
     mov_vec = get_normal_movement_vector(p1, p2, i, j)
-    zone_output = []
-    zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
-    if len(zone_output) > 1:
-        return True
-    return False
+    return do_intersect(double_width_square_arrangement, mov_vec)
+    # zone_output = []
+    # zone(double_width_square_arrangement, mov_vec, zone_output, double_width_square_point_locator)
+    # if len(zone_output) > 1:
+    #     return True
+    # return False
 
 
 # checks for collisions return:
@@ -194,10 +199,12 @@ def path_collision_free(point_locator, robot_num, p1, p2, arrangement, double_wi
     else:
         robots_to_check = [i for i in range(robot_num)]
     for i in robots_to_check:
-        zone_output = []
-        zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
-        if len(zone_output) > 1:
+        if do_intersect(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1]))):
             return False, i
+        # zone_output = []
+        # zone(arrangement, Curve_2(Point_2(p1[2*i], p1[2*i+1]), Point_2(p2[2*i], p2[2*i+1])), zone_output, point_locator)
+        # if len(zone_output) > 1:
+        #     return False, i
     # check for robot to robot collision
     if not do_single:
         for i in range(robot_num):
@@ -235,10 +242,11 @@ def get_origin_robot_coord(width):
 def generate_path(path, robots, obstacles, destination):
     # random.seed(0) #  for tests
     start = time.time()
-    robot_width = robots[0][1].x() - robots[0][0].x()
-    assert(robot_width == FT(1))
     robot_num = len(robots)
     assert(len(destination) == robot_num)
+    for i in range(robot_num):
+        robot_width = robots[i][1].x() - robots[i][0].x()
+        assert(robot_width == FT(1))
     do_use_single_robot_movement = False
     # init obs for collision detection
     one_width_square = Polygon_2(get_origin_robot_coord(robot_width))
@@ -286,10 +294,11 @@ def generate_path(path, robots, obstacles, destination):
 
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
+        # TODO create a valid point distance handler and play with it using constant random (and compare to current)
         tree.insert(new_points)
         print("vertices amount: ", len(vertices))
         if len(new_points) < single_robot_movement_if_less_then:
-            print("single robot movement")
+            #print("single robot movement")
             do_use_single_robot_movement = use_single_robot_movement
         if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, dest_point, obstacles_arrangement, double_width_square_arrangement, double_width_square_point_locator):
             break
@@ -297,8 +306,8 @@ def generate_path(path, robots, obstacles, destination):
     graph[dest_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2*i], dp[2*i+1]) for i in range(robot_num)])
-    print("k_nearest = ", k_nearest)
-    print("steer_eta = ", steer_eta)
-    print("num_of_points_in_batch = ", num_of_points_in_batch)
-    print("used single robot movement:", do_use_single_robot_movement)
-    print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices))
+    #print("k_nearest = ", k_nearest)
+    #print("steer_eta = ", steer_eta)
+    #print("num_of_points_in_batch = ", num_of_points_in_batch)
+    #print("used single robot movement:", do_use_single_robot_movement)
+    print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
