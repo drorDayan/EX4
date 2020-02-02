@@ -13,23 +13,112 @@ use_single_robot_movement = True
 FREESPACE = 'freespace'
 
 # Code: #
-
+class RRT_Cost():
+    def __init__(self, weight, calc_default_func, calc_func, merge_func):
+        self.weight = weight
+        self.calc_default_func = calc_default_func
+        self.calc_func = calc_func
+        self.merge_func = merge_func
 
 class RRT_Node():
-    def __init__(self, pt, pr=None, n=0):
+    costs = {
+    #  "name":          RRT_Cost(weight,
+    #                            lambda c: <defualt value at point c>
+    #                            lambda c, p: <value for segment from p to c>,
+    #                            lambda old, update : <value for entire path where update is the value for the last step and old is for the rest>
+    #                            )
+        "distance":     RRT_Cost(0,
+                                 lambda c : 0,
+                                 lambda c, p : distance_squared(c.d, p.point, c.point),
+                                 lambda old, update : old + update
+                                 ),
+        "clearance_o":  RRT_Cost(0,
+                                 lambda c : calc_clearance_with_obstacels_stationary(c.d,c.point),
+                                 lambda c, p : calc_clearance_with_obstacels(c.d, p.point, c.point),
+                                 lambda old, update : min(old,update)
+                                 ),
+        "clearance_r":  RRT_Cost(0,
+                                 lambda c : min_inter_robot_distance_stationary(c.d,c.p),
+                                 lambda c, p : min_inter_robot_distance(c.d, p.point, c.point),
+                                 lambda old, update : min(old,update)
+                                 )
+    }
+    def __init__(self, pt, d, pr = None):
         self.point = pt
-        self.parent = pr
-        self.nval = n  # Will be used to store distance to this point, etc.
+        self.d = d
+        self.metrics = {}
+        self.set_parent(pr)
 
+    def set_parent(self, pr):
+        self.parent = pr
+        for k in self.costs.keys():
+            if self.costs[k].weight > 0:
+                if pr is not None:
+                    self.metrics[k] = self.costs[k].merge_func(self.parent.metrics[k], self.costs[k].calc_func(self,self.parent))
+                else:
+                    self.metrics[k] = self.costs[k].calc_default_func(self)
+
+    def update_costs(self):
+        pass
     def get_path_to_here(self, ret_path):
         cur = self
         while cur != None:
             ret_path.insert(0, cur.point)
             cur = cur.parent
         return ret_path
+# Clearance related code: #
+def between(s, p, f):
+    return (s <= p <= f) or (f <= p <= s)
+
+def min_dist_between_moving_robots_l_inf(s1, s2, t1, t2):
+    # 2DO Enumerate over all Gods, Godesses, Kami, etc. and for each one pray that this code works.
+    sx = s1[0]-s2[0]
+    sy = s1[1]-s2[1]
+
+    tx = t1[0]-t2[0]    
+    ty = t1[1]-t2[1]    
+
+    dx = tx - sx    
+    dy = ty - sy    
+
+    m = dy/dx   
+    n = (dx*sy-dy*sx)/dx    
+    cands = [max(abs(sx), abs(sy)), max(abs(tx), abs(ty))]  
+    if m != 1:  
+        z = n/(1-m) 
+        if between(sx, z, tx):  
+            cands.append(abs(z))    
+    if m != -1: 
+        z = n/(-1-m)    
+        if between(sx, z, tx):  
+            cands.append(abs(z))    
+    return min(cands)   
+
+
+def min_inter_robot_distance(robot_num, start_point, target_point):
+    min_dist = None
+    for i in range(robot_num):  
+        s1 = (start_point[2*i].to_double(), start_point[2*i+1].to_double())
+        t1 = (target_point[2*i].to_double(), target_point[2*i+1].to_double())
+        for j in range(i+1, robot_num): 
+            s2 = (start_point[2*j].to_double(), start_point[2*j+1].to_double())
+            t2 = (target_point[2*j].to_double(), target_point[2*j+1].to_double())
+            
+            new_min_dist = min_dist_between_moving_robots_l_inf(s1, s2, t1, t2)
+            min_dist = new_min_dist if min_dist is None else min(min_dist, new_min_dist)
+
+    return min_dist
+
+def min_inter_robot_distance_stationary(robot_num, start_point):
+    return 0
+
+def calc_clearance_with_obstacels(robot_num, start_point, target_point):
+    return 0
+
+def calc_clearance_with_obstacels_stationary(robot_num, start_point):
+    return 0
 
 # obs collision detection code: #
-
 
 def polygon_with_holes_to_arrangement(poly):
     assert isinstance(poly, Polygon_with_holes_2)
@@ -225,7 +314,8 @@ def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arran
     for neighbor in nn:
         free, x = path_collision_free(point_locator, robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement, double_width_square_point_locator)
         if free:
-            graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
+            print("aha!")
+            graph[dest_point] = RRT_Node(dest_point, 2*robot_num, graph[neighbor[0]])
             return True
     return False
 
@@ -265,7 +355,7 @@ def generate_path(path, robots, obstacles, destination):
     start_point = Point_d(2*robot_num, sum(start_ref_points, []))
     dest_point = Point_d(2*robot_num, sum(target_ref_points, []))
     vertices = [start_point]
-    graph = {start_point:RRT_Node(start_point)}
+    graph = {start_point:RRT_Node(start_point, 2*robot_num)}
     tree = Kd_tree(vertices)
     while True:
         print("new batch, time= ", time.time() - start)
@@ -279,7 +369,7 @@ def generate_path(path, robots, obstacles, destination):
             if free:
                 new_points.append(new)
                 vertices.append(new)
-                graph[new] = RRT_Node(new, graph[near])
+                graph[new] = RRT_Node(new, 2*robot_num, graph[near])
             elif do_use_single_robot_movement:
                 for i in range(robot_num):
                     new_data = [near[j] for j in range(2*robot_num)]
@@ -290,7 +380,7 @@ def generate_path(path, robots, obstacles, destination):
                     if free:
                         new_points.append(my_new)
                         vertices.append(my_new)
-                        graph[my_new] = RRT_Node(my_new, graph[near])
+                        graph[my_new] = RRT_Node(my_new, 2*robot_num, graph[near])
 
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
@@ -311,3 +401,4 @@ def generate_path(path, robots, obstacles, destination):
     #print("num_of_points_in_batch = ", num_of_points_in_batch)
     #print("used single robot movement:", do_use_single_robot_movement)
     print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
+    print(graph[dest_point].metrics)
