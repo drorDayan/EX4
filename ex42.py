@@ -15,56 +15,75 @@ FREESPACE = 'freespace'
 
 # Code: #
 class RRT_Cost(object):
-    def __init__(self, weight, calc_default_func, calc_func, merge_func):
+    def __init__(self, weight, calc_segment, reduce_path):
         self.weight = weight
-        self.calc_default_func = calc_default_func
-        self.calc_func = calc_func
-        self.merge_func = merge_func
+        self.calc_segment = calc_segment
+        self.reduce_path = reduce_path
 
 
 class RRT_Node(object):
     costs = {
-        #  "name":          RRT_Cost(weight,
-        #                            lambda c: <defualt value at point c>
-        #                            lambda c, p: <value for segment from p to c>,
-        #                            lambda old, update : <value for entire path where update is the value for the last step and old is for the rest>
-        #                            )
         "distance": RRT_Cost(1,
-                             lambda c: FT(0),
-                             lambda c, p: distance_squared(c.robot_num, p.point, c.point),
-                             lambda old, update: old + update
+                             lambda current, parent: distance_squared(current.robot_num,
+                                                                      parent.point,
+                                                                      current.point),
+                             lambda my_val, parent_val: my_val + parent_val
                              ),
-        "clearance_o": RRT_Cost(0,
-                                lambda c: calc_clearance_with_obstacles_stationary(c.robot_num, c.point),
-                                lambda c, p: calc_clearance_with_obstacles(c.robot_num, p.point, c.point),
-                                lambda old, update: min(old, update)
-                                ),
-        "clearance_r": RRT_Cost(0,
-                                lambda c: min_inter_robot_distance_stationary(c.robot_num, c.p),
-                                lambda c, p: min_inter_robot_distance(c.robot_num, p.point, c.point),
-                                lambda old, update: min(old, update)
-                                )
+        "inv_clearance_o": RRT_Cost(0,
+                                    lambda current, parent: FT(1) / calc_clearance_with_obstacles(current.robot_num,
+                                                                                                  parent.point,
+                                                                                                  current.point),
+                                    lambda old, update: min(old, update)
+                                    ),
+        "inv_clearance_r": RRT_Cost(1,
+                                    lambda current, parent: FT(1) / min_inter_robot_distance(current.robot_num,
+                                                                                             parent.point,
+                                                                                             current.point),
+                                    lambda old, update: min(old, update)
+                                    )
     }
 
     def __init__(self, pt, robot_num, pr=None):
         self.point = pt
+        self.parent = pr
+
         self.robot_num = robot_num
         self.metrics = {}
-        self.parent = None
-        self.set_parent(pr)
+        self.calc_metrics()
 
-    def set_parent(self, pr):
-        self.parent = pr
-        for k in self.costs.keys():
-            if self.costs[k].weight > 0:
-                if pr is not None:
-                    self.metrics[k] = self.costs[k].merge_func(self.parent.metrics[k],
-                                                               self.costs[k].calc_func(self, self.parent))
+    def calc_metrics(self):
+        pr = self.parent
+        if pr is not None:
+            for k in self.costs.keys():
+                if self.costs[k].weight > 0:
+                    self.metrics[k] = self.costs[k].calc_segment(self, pr)
                 else:
-                    self.metrics[k] = self.costs[k].calc_default_func(self)
+                    self.metrics[k] = FT(0)
+        else:
+            for k in self.costs.keys():
+                self.metrics[k] = FT(0)
 
-    def update_costs(self):
-        pass
+    def calc_path_metrics(self):
+        my_values = {}
+        if self.parent is None:
+            for metric in self.costs.keys():
+                if self.costs[metric].weight > 0:
+                    my_values[metric] = None
+        else:
+            parent_values = self.parent.calc_path_metrics()
+            for metric in parent_values.keys():
+                if parent_values[metric] is None:
+                    my_values[metric] = self.metrics[metric]
+                else:
+                    my_values[metric] = self.costs[metric].reduce_path(self.metrics[metric],
+                                                                       parent_values[metric])
+        return my_values
+
+    def calc_value(self):
+        separate_values = self.calc_path_metrics()
+        print(separate_values)
+        return sum([separate_values[metric] * FT(self.costs[metric].weight) for metric in separate_values.keys()],
+                   FT(0))
 
     def get_path_to_here(self, ret_path):
         cur = self
@@ -104,6 +123,25 @@ def min_dist_between_moving_robots_l_inf(s1, s2, t1, t2):
     return min(candidates)
 
 
+def min_dist_between_moving_robots(s1, s2, t1, t2):
+    sx = s1[0] - s2[0]
+    sy = s1[1] - s2[1]
+
+    tx = t1[0] - t2[0]
+    ty = t1[1] - t2[1]
+
+    dx = tx - sx
+    dy = ty - sy
+    n = (dx * sy - dy * sx) / dx
+    m2_1 = (dy / dx) ** 2 + 1
+
+    if between(sy, n / m2_1, ty):
+        return abs(n) / sqrt(m2_1)
+    else:
+        return min(sqrt(sx ** 2 + sy ** 2),
+                   sqrt(tx ** 2 + ty ** 2))
+
+
 def min_inter_robot_distance(robot_num, start_point, target_point):
     min_dist = None
     for i in range(robot_num):
@@ -113,21 +151,13 @@ def min_inter_robot_distance(robot_num, start_point, target_point):
             s2 = (start_point[2 * j].to_double(), start_point[2 * j + 1].to_double())
             t2 = (target_point[2 * j].to_double(), target_point[2 * j + 1].to_double())
 
-            new_min_dist = min_dist_between_moving_robots_l_inf(s1, s2, t1, t2)
+            new_min_dist = min_dist_between_moving_robots(s1, s2, t1, t2)
             min_dist = new_min_dist if min_dist is None else min(min_dist, new_min_dist)
 
-    return min_dist
-
-
-def min_inter_robot_distance_stationary(robot_num, start_point):
-    return 0
+    return FT(min_dist)
 
 
 def calc_clearance_with_obstacles(robot_num, start_point, target_point):
-    return 0
-
-
-def calc_clearance_with_obstacles_stationary(robot_num, start_point):
     return 0
 
 
@@ -229,11 +259,7 @@ def k_nn(tree, k, query, eps):
 
 
 def distance_squared(robot_num, p1, p2):
-    # return transformed_distance(p1, p2)
-    tmp = FT(0)
-    for i in range(2 * robot_num):
-        tmp = tmp + (p1[i] - p2[i]) * (p1[i] - p2[i])
-    return tmp
+    return Euclidean_distance().transformed_distance(p1, p2)
 
 
 def get_nearest(robot_num, tree, new_points, rand):
@@ -423,4 +449,4 @@ def generate_path(path, robots, obstacles, destination):
     # print("num_of_points_in_batch = ", num_of_points_in_batch)
     # print("used single robot movement:", do_use_single_robot_movement)
     print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
-    print(graph[dest_point].metrics)
+    print(graph[dest_point].calc_value())
