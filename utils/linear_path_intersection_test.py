@@ -1,5 +1,4 @@
-from arr2_epec_seg_ex import *
-from ms_polygon_segment import *
+from utils.ms_polygon_segment import *
 
 def do_intersect(p1, p2, source, target):
   #fix p1 and move p2 relatively

@@ -48,6 +48,7 @@ class GUI(object):
     self.scene = QGraphicsScene()
 
     MainWindow.setObjectName("MainWindow")
+    #MainWindow.setWindowIcon(QtGui.QIcon("icon.png"))
     MainWindow.resize(self.width, self.height)
 
 #qt designer generated code
@@ -206,7 +207,7 @@ class GUI(object):
     anim = QPauseAnimation(duration)
     return anim
 
-  def parallel_animation(self, animations):
+  def parallel_animation(self, *animations):
     group = QParallelAnimationGroup()
     for anim in animations:
       group.addAnimation(anim)

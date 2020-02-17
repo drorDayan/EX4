@@ -1,4 +1,12 @@
 from arr2_epec_seg_ex import FT, Gmpq, Point_2
+
+
+def coordinate_to_FT(coord):
+  if ("." in coord):
+    return FT(Gmpq(float(coord)))
+  else:
+    return FT(Gmpq(coord))
+
 def read_polygon(filename):
   with open(filename, "r") as f:
     input_data = f.readline().split(" ")
@@ -27,11 +35,11 @@ def read_polygon_scene(filename):
       if len(input_data) == 1:
         out.append(int(input_data[0]))
       elif len(input_data) == 2:
-        out.append(Point_2(FT(Gmpq(input_data[0])), FT(Gmpq(input_data[1]))))
+        out.append(Point_2(coordinate_to_FT(input_data[0]), coordinate_to_FT(input_data[1])))
       else:
         polygon = []
         for i in range(0, int(input_data[0])):
-          polygon.append(Point_2(FT(Gmpq(input_data[2 * i + 1])), FT((Gmpq(input_data[2 * i + 2])))))
+          polygon.append(Point_2(coordinate_to_FT(input_data[2 * i + 1]), coordinate_to_FT(input_data[2 * i + 2])))
         out.append(polygon)
   return out
 
@@ -46,14 +54,14 @@ def save_path(path, filename):
     file.write(line)
   file.close()
 
-def load_path(path, filename):
+def load_path(path, filename, number_of_robots):
   with open(filename, 'r') as file:
     for line in file:
       coords = line.split(" ")
-      x0 = FT(Gmpq(coords[0]))
-      y0 = FT(Gmpq((coords[1])))
-      x1 = FT(Gmpq(coords[2]))
-      y1 = FT(Gmpq(coords[3]))
-      p0 = Point_2(x0, y0)
-      p1 = Point_2(x1, y1)
-      path.append((p0, p1))
+      tup = []
+      for i in range(number_of_robots):
+        x = coordinate_to_FT(coords[i*2])
+        y = coordinate_to_FT(coords[i*2 + 1])
+        p = Point_2(x, y)
+        tup.append(p)
+      path.append(tup)
