@@ -9,7 +9,6 @@ from utils.neighbor_finder import *
 from utils.point_factory import *
 from utils.scene_data import *
 
-
 # Code: #
 
 
@@ -68,7 +67,7 @@ def generate_path(path, robots, obstacles, destination):
         new_points = []
         for p in batch:
             near = get_nearest(robot_num, tree, new_points, p)
-            new = steer(robot_num, near, p, steer_eta)
+            new = steer(robot_num, near, p, FT(steer_eta))
             free, idx = path_collision_free(obstacles_point_locator, robot_num, near, new, obstacles_arrangement,
                                             double_width_square_arrangement, double_width_square_point_locator)
             if free:
