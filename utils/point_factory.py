@@ -3,7 +3,6 @@ from arr2_epec_seg_ex import *
 from utils.misc import interweave
 
 
-# TODO assume sqr and use [blah for range]
 def get_batch(robot_num, num_of_points, max_x, max_y, min_x, min_y, dest_point):
     v = []
     num_of_points_in_dest_direction = random.randint(0, num_of_points / 5)

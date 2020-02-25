@@ -1,4 +1,4 @@
-from utils.ms_polygon_segment import *
+from utils.made_by_staff.ms_polygon_segment import *
 
 def do_intersect(p1, p2, source, target):
   #fix p1 and move p2 relatively

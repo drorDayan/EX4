@@ -1,8 +1,8 @@
 from arr2_epec_seg_ex import *
 import importlib
 from gui.gui import GUI, QtWidgets, Qt, QPointF
-from utils import read_input, ms_polygon_segment, linear_path_intersection_test
-from utils.conversions import point_2_to_xy, polygon_2_to_tuples_list
+from utils.made_by_staff import linear_path_intersection_test, read_input, ms_polygon_segment
+from utils.made_by_staff.conversions import point_2_to_xy, polygon_2_to_tuples_list
 
 offset = -Vector_2(FT(0.5), FT(0.5))
 colors = [Qt.yellow, Qt.green, Qt.red, Qt.blue, Qt.magenta]

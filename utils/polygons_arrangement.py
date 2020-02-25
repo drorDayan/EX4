@@ -12,7 +12,6 @@ def polygon_with_holes_to_arrangement(poly):
         assert isinstance(f, Face)
         f.set_data({FREESPACE: f.is_unbounded()})
 
-    # TODO: test this with a complex polygon
     for hole in poly.holes():
         insert(arr, [Curve_2(e) for e in hole.edges()])
 

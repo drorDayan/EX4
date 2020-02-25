@@ -1,5 +1,5 @@
-from utils.clearance import *
-from utils.distance import *
+from utils.metrics.clearance import *
+from utils.metrics.distance import *
 
 
 class RRT_Cost(object):
@@ -68,8 +68,10 @@ class RRT_Node(object):
         return my_values
 
     def calc_value(self):
+        if self.parent is None:
+            return FT(0)
         separate_values = self.calc_path_metrics()
-        print(separate_values)
+        # print(self.point, separate_values)
         return sum([separate_values[metric] * FT(self.costs[metric].weight) for metric in separate_values.keys()],
                    FT(0))
 
