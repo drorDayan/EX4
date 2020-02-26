@@ -14,9 +14,9 @@ from utils.scene_data import *
 def steer(robot_num, near, rand, eta):
     dist = FT(sqrt(distance_squared(robot_num, near, rand).to_double()))
     if dist < eta:
-        return rand
+        return rand, False
     else:
-        return Point_d(2 * robot_num, [near[i] + (rand[i] - near[i]) * eta / dist for i in range(2 * robot_num)])
+        return Point_d(2 * robot_num, [near[i] + (rand[i] - near[i]) * eta / dist for i in range(2 * robot_num)]), True
 
 
 def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arrangement, double_width_square_arrangement,
@@ -31,8 +31,6 @@ def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arran
 
 
 def generate_path(path, robots, obstacles, destination):
-    # random.seed(0) #  for tests
-    start = time.time()
     robot_num = len(robots)
     assert (len(destination) == robot_num)
     robot_width = 0
@@ -58,23 +56,45 @@ def generate_path(path, robots, obstacles, destination):
     vertices = [start_point]
     graph = {start_point: RRT_Node(start_point, robot_num)}
     tree = Kd_tree(vertices)
-    time_of_last_sample = 0
+    start_time = time.time()
+    time_of_last_sample = start_time
+    connected_to_destination = False
+    samples = []
     while True:
-        current_time = time.time() - start
-        print("new batch, time= ", current_time)
+        current_time = time.time()
+        if current_time - start_time >= seconds_to_run:
+            break
+
+        trying_destination = False
         if current_time - time_of_last_sample >= seconds_per_sample:
-            pass  # TODO do samples
-        # I use a batch so that the algorithm can be iterative
-        batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, destination_point)
+            time_of_last_sample = current_time
+            if not connected_to_destination:
+                print("trying to connect to destination, time= ", current_time - start_time)
+                batch = [destination_point]
+                trying_destination = True
+            else:
+                destination_node = graph[destination_point]
+                samples.append((current_time-start_time, destination_node.path_to_origin_value()))
+        if not trying_destination:
+            print("new batch, time= ", current_time - start_time)
+            # I use a batch so that the algorithm can be iterative
+            batch = get_batch(robot_num, num_of_points_in_batch, max_x, max_y, min_x, min_y, destination_point)
+
         # We add points to the tree in batches, so we hold the new points in an array and pass them with the tree
         # when looking for neighbors
         new_points = []
         for p in batch:
             nearest_point = get_nearest(robot_num, tree, new_points, p)
-            steered_point = steer(robot_num, nearest_point, p, FT(steer_eta))
+            steered_point, steered = steer(robot_num, nearest_point, p, FT(steer_eta))
             if path_collision_free(robot_num, nearest_point, steered_point, obstacles_arrangement,
                                    double_width_square_arrangement, double_width_square_point_locator):
+                if trying_destination and not steered:
+                    connected_to_destination = True
+                    print("Successfully found a path to the destination!")
                 neighborhood = find_neighborhood(robot_num, tree, new_points, steered_point, FT(steer_eta))
+                new_points.append(steered_point)
+                vertices.append(steered_point)
+                new_node = RRT_Node(steered_point, robot_num)
                 if nearest_point in neighborhood:  # make sure that nearest_point is first
                     neighborhood.remove(nearest_point)
                 neighborhood.insert(0, nearest_point)
@@ -82,29 +102,25 @@ def generate_path(path, robots, obstacles, destination):
                 for neighbor in neighborhood:
                     if path_collision_free(robot_num, neighbor, steered_point, obstacles_arrangement,
                                            double_width_square_arrangement, double_width_square_point_locator):
-                        neighborhood_values[neighbor] = graph[neighbor].calc_value()  # TODO take last edge into account
-                # if len(neighborhood_values) == 0:
-                #     continue
-                best_neighbor = min(neighborhood_values, key=neighborhood_values.get)
-                # best_neighbor = nearest_point
-                new_points.append(steered_point)
-                vertices.append(steered_point)
-                graph[steered_point] = RRT_Node(steered_point, robot_num, graph[best_neighbor])
-                # TODO re-wire
+                        neighborhood_values[neighbor] = new_node.path_to_origin_through_target_values(graph[neighbor])
+                best_neighbor = min(neighborhood_values, key=lambda k: neighborhood_values.get(k)[0])
+                new_node.set_parent(graph[best_neighbor])
+                graph[steered_point] = new_node
+                # re-wiring:
+                for neighbor in neighborhood_values.keys():  # Only neighbors with free paths were added
+                    if neighborhood_values[neighbor][1] >\
+                            graph[neighbor].path_to_origin_through_target_values(new_node)[0]:
+                        graph[neighbor].set_parent(new_node)
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
         # each double the size of the previous one
-        parents = {graph[np].parent.point for np in new_points}
         tree.insert(new_points)
         print("vertices amount: ", len(vertices))
-        if try_connect_to_dest(graph, obstacles_point_locator, robot_num, tree, destination_point,
-                               obstacles_arrangement,
-                               double_width_square_arrangement, double_width_square_point_locator):
-            break
     d_path = []
     graph[destination_point].get_path_to_here(d_path)
     for dp in d_path:
         path.append([Point_2(dp[2 * i], dp[2 * i + 1]) for i in range(robot_num)])
-    print("finished, time= ", time.time() - start, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
-    gdpt = graph[destination_point]
-    print(gdpt.calc_value())
-    print(gdpt.calc_path_metrics())
+    print("finished, time= ", time.time() - start_time, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
+    for sample in samples:
+        print(str(sample[0]).ljust(20, '0'),
+              '\t',
+              str(sample[1]).ljust(8, '0'))
