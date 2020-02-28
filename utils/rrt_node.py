@@ -37,13 +37,22 @@ class RRT_Node(object):
         self.parent = pr
 
         self.robot_num = robot_num
-        self.values = self.segment_to_target_values_dict(self.parent)
+        self.has_metric = False
+        for metric in self.costs.keys():
+            if self.costs[metric].weight > 0:
+                self.has_metric = True
+                break
+        if self.has_metric:
+            self.values = self.segment_to_target_values_dict(self.parent)
 
     def set_parent(self, new_parent):
         self.parent = new_parent
-        self.values = self.segment_to_target_values_dict(new_parent)
+        if self.has_metric:
+            self.values = self.segment_to_target_values_dict(new_parent)
 
     def segment_to_target_values_dict(self, target):
+        if not self.has_metric:
+            return {}
         metrics = {}
         if target is not None:
             for k in self.costs.keys():
@@ -57,6 +66,8 @@ class RRT_Node(object):
         return metrics
 
     def path_to_origin_values_dict(self):
+        if not self.has_metric:
+            return {}
         final_values = {}
         if self.parent is None:
             for metric in self.costs.keys():
@@ -73,9 +84,13 @@ class RRT_Node(object):
         return final_values
 
     def path_to_origin_value(self):
+        if not self.has_metric:
+            return 0
         return self.path_to_origin_through_target_values(self.parent)[0]
 
     def path_to_origin_through_target_values(self, target):
+        if not self.has_metric:
+            return FT(0), FT(0)
         if target is None:
             return FT(0), FT(0)
 
