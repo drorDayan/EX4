@@ -108,6 +108,8 @@ def generate_path(path, robots, obstacles, destination):
                 graph[steered_point] = new_node
                 # re-wiring:
                 for neighbor in neighborhood_values.keys():  # Only neighbors with free paths were added
+                    if neighbor == best_neighbor:
+                        continue
                     if neighborhood_values[neighbor][1] >\
                             graph[neighbor].path_to_origin_through_target_values(new_node)[0]:
                         graph[neighbor].set_parent(new_node)

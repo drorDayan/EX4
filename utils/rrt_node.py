@@ -21,13 +21,13 @@ class RRT_Node(object):
                                     lambda current, parent: FT(1) / calc_clearance_with_obstacles(current.robot_num,
                                                                                                   parent.point,
                                                                                                   current.point),
-                                    lambda old, update: min(old, update)
+                                    lambda old, update: max(old, update)
                                     ),
         "inv_clearance_r": RRT_Cost(0,
                                     lambda current, parent: FT(1) / min_inter_robot_distance(current.robot_num,
                                                                                              parent.point,
                                                                                              current.point),
-                                    lambda old, update: min(old, update)
+                                    lambda old, update: max(old, update)
                                     )
     }
 
