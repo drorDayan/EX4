@@ -1,5 +1,6 @@
 from utils.metrics.clearance import *
 from utils.metrics.distance import *
+from config import *
 
 
 class RRT_Cost(object):
@@ -11,19 +12,19 @@ class RRT_Cost(object):
 
 class RRT_Node(object):
     costs = {
-        "distance": RRT_Cost(1,
+        "distance": RRT_Cost(weight_distance,
                              lambda current, parent: distance_squared(current.robot_num,
                                                                       parent.point,
                                                                       current.point),
                              lambda my_val, parent_val: my_val + parent_val
                              ),
-        "inv_clearance_o": RRT_Cost(0,
+        "inv_clearance_o": RRT_Cost(weight_clearance,
                                     lambda current, parent: FT(1) / calc_clearance_with_obstacles(current.robot_num,
                                                                                                   parent.point,
                                                                                                   current.point),
                                     lambda old, update: max(old, update)
                                     ),
-        "inv_clearance_r": RRT_Cost(0,
+        "inv_clearance_r": RRT_Cost(weight_robot_clearance,
                                     lambda current, parent: FT(1) / min_inter_robot_distance(current.robot_num,
                                                                                              parent.point,
                                                                                              current.point),
