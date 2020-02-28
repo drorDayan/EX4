@@ -91,6 +91,7 @@ def generate_path(path, robots, obstacles, destination):
                 if trying_destination and not steered:
                     connected_to_destination = True
                     print("Successfully found a path to the destination!")
+                # Look for best neighbor:
                 neighborhood = find_neighborhood(robot_num, tree, new_points, steered_point, FT(steer_eta))
                 new_points.append(steered_point)
                 vertices.append(steered_point)
