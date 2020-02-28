@@ -1,5 +1,6 @@
 from arr2_epec_seg_ex import *
 from utils.metrics.distance import distance_squared
+from math import log2
 
 
 def k_nn(tree, k, query, eps):
@@ -32,7 +33,9 @@ def get_nearest(robot_num, tree, new_points, rand):
 
 
 def find_neighborhood(robot_num, tree, new_points, sphere_center, eta):
-    r = min(FT(10), eta)  # TODO calculate r correctly
+    n = len(new_points) + tree.size()
+    r = min(FT(3*(log2(n)/n)**(1/(2*robot_num+1))),
+            eta)
 
     # Circle centered at arg0 with radius of arg1 and epsilon set to arg2
     sphere = Fuzzy_sphere(sphere_center, r, FT(0))
