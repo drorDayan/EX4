@@ -1,12 +1,12 @@
 # Metrics weights:
 weight_distance_sum = 0
-weight_distance_max = 0
+weight_distance_max = 1
 weight_robot_clearance_inv = 0
-weight_turn_angle_max = 1
+weight_turn_angle_max = 0 # Not working!!!
 
 # Running time:
-seconds_to_run = 900
-seconds_per_sample = 50
+seconds_to_run = 1200
+seconds_per_sample = 20
 
 # Algorithm Variables:
 k_nearest = 10
