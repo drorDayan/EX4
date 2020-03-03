@@ -1,42 +1,48 @@
-from utils.metrics.clearance import *
+from utils.metrics.robot_clearance import *
+from utils.metrics.turn_angle import *
 from utils.metrics.distance import *
 from config import *
 
 
 class RRT_Cost(object):
-    def __init__(self, weight, calc_segment, reduce_path):
+    def __init__(self, weight, calc_segment, reduce_path, extract_value=lambda x: x):
         self.weight = weight
         self.calc_segment = calc_segment
         self.reduce_path = reduce_path
+        self.extract_value = extract_value
 
 
 class RRT_Node(object):
     costs = {
-        "distance": RRT_Cost(weight_distance,
-                             lambda current, parent: distance_squared(current.robot_num,
-                                                                      parent.point,
-                                                                      current.point),
-                             lambda my_val, parent_val: my_val + parent_val
-                             ),
-        "inv_clearance_o": RRT_Cost(weight_obstacle_clearance_inv,
-                                    lambda current, parent: FT(1) / calc_clearance_with_obstacles(current.robot_num,
-                                                                                                  parent.point,
-                                                                                                  current.point),
-                                    lambda old, update: max(old, update)
-                                    ),
+        "distances_sum": RRT_Cost(weight_distance_sum,
+                                  lambda current, parent: distances_squared(parent.point, current.point),
+                                  lambda my_val, parent_val: [my_val[i] + parent_val[i] for i in range(len(my_val))],
+                                  lambda lengths_list: sum(lengths_list, FT(0))),
+        "distances_max": RRT_Cost(weight_distance_max,
+                                  lambda current, parent: distances_squared(parent.point, current.point),
+                                  lambda my_val, parent_val: [my_val[i] + parent_val[i] for i in range(len(my_val))],
+                                  lambda lengths_list: max(lengths_list)),
+        # "distance": RRT_Cost(weight_distance_sum,
+        #                      lambda current, parent: distance_squared(parent.point, current.point),
+        #                      lambda my_val, parent_val: my_val + parent_val
+        #                      ),
         "inv_clearance_r": RRT_Cost(weight_robot_clearance_inv,
-                                    lambda current, parent: FT(1) / min_inter_robot_distance(current.robot_num,
-                                                                                             parent.point,
+                                    lambda current, parent: FT(1) / min_inter_robot_distance(parent.point,
                                                                                              current.point),
-                                    lambda old, update: max(old, update)
-                                    )
+                                    lambda my_val, parent_val: max(my_val, parent_val)
+                                    ),
+        "turn_angle": RRT_Cost(weight_turn_angle,
+                               lambda current, parent: calc_angle_transformed(None if parent.parent is None else
+                                                                              parent.parent.point,
+                                                                              parent.point, current.point),
+                               lambda my_val, parent_val: max(my_val, parent_val)
+                               )
     }
 
-    def __init__(self, pt, robot_num, pr=None):
+    def __init__(self, pt, pr=None):
         self.point = pt
         self.parent = pr
 
-        self.robot_num = robot_num
         self.has_metric = False
         for metric in self.costs.keys():
             if self.costs[metric].weight > 0:
@@ -83,6 +89,9 @@ class RRT_Node(object):
                                                                           parent_values[metric])
         return final_values
 
+    def reduce_dict_to_value(self, values_dict):
+        return sum([values_dict[metric] * FT(self.costs[metric].weight) for metric in values_dict.keys()], FT(0))
+
     def path_to_origin_value(self):
         if not self.has_metric:
             return 0
@@ -105,9 +114,9 @@ class RRT_Node(object):
             else:
                 my_separate_values[metric] = self.costs[metric].reduce_path(first_segment_separate_values[metric],
                                                                             target_separate_values[metric])
-
-        return [sum([values_dict[metric] * FT(self.costs[metric].weight) for metric in values_dict.keys()],
-                    FT(0)) for values_dict in (my_separate_values, target_separate_values)]
+                target_separate_values[metric] = self.costs[metric].extract_value(target_separate_values[metric])
+            my_separate_values[metric] = self.costs[metric].extract_value(my_separate_values[metric])
+        return [self.reduce_dict_to_value(values_dict) for values_dict in (my_separate_values, target_separate_values)]
 
     def get_path_to_here(self, ret_path):
         cur = self

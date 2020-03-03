@@ -47,7 +47,8 @@ def min_dist_between_moving_robots(s1, s2, t1, t2):
                    sqrt(tx ** 2 + ty ** 2))
 
 
-def min_inter_robot_distance(robot_num, start_point, target_point):
+def min_inter_robot_distance(start_point, target_point):
+    robot_num = int(start_point.dimension()/2)
     min_dist = None
     for i in range(robot_num):
         s1 = (start_point[2 * i].to_double(), start_point[2 * i + 1].to_double())
@@ -60,7 +61,3 @@ def min_inter_robot_distance(robot_num, start_point, target_point):
             min_dist = new_min_dist if min_dist is None else min(min_dist, new_min_dist)
 
     return FT(min_dist)
-
-
-def calc_clearance_with_obstacles(robot_num, start_point, target_point):
-    return 0  # TODO implement  this

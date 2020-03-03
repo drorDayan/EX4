@@ -12,7 +12,7 @@ from utils.scene_data import *
 
 
 def steer(robot_num, near, rand, eta):
-    dist = FT(sqrt(distance_squared(robot_num, near, rand).to_double()))
+    dist = FT(sqrt(distance_squared(near, rand).to_double()))
     if dist < eta:
         return rand, False
     else:
@@ -25,7 +25,7 @@ def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arran
     for neighbor in nn:
         if path_collision_free(robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement,
                                double_width_square_point_locator):
-            graph[dest_point] = RRT_Node(dest_point, robot_num, graph[neighbor[0]])
+            graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
             return True
     return False
 
@@ -54,11 +54,12 @@ def generate_path(path, robots, obstacles, destination):
     start_point = Point_d(2 * robot_num, sum(start_ref_points, []))
     destination_point = Point_d(2 * robot_num, sum(target_ref_points, []))
     vertices = [start_point]
-    graph = {start_point: RRT_Node(start_point, robot_num)}
+    graph = {start_point: RRT_Node(start_point)}
     tree = Kd_tree(vertices)
     start_time = time.time()
     time_of_last_sample = start_time
     connected_to_destination = False
+    just_succeeded_connecting = False
     samples = []
     while True:
         current_time = time.time()
@@ -66,7 +67,7 @@ def generate_path(path, robots, obstacles, destination):
             break
 
         trying_destination = False
-        if current_time - time_of_last_sample >= seconds_per_sample:
+        if current_time - time_of_last_sample >= seconds_per_sample or just_succeeded_connecting:
             time_of_last_sample = current_time
             if not connected_to_destination:
                 print("trying to connect to destination, time= ", current_time - start_time)
@@ -74,7 +75,8 @@ def generate_path(path, robots, obstacles, destination):
                 trying_destination = True
             else:
                 destination_node = graph[destination_point]
-                samples.append((current_time-start_time, destination_node.path_to_origin_value()))
+                samples.append((current_time-start_time, destination_node.path_to_origin_values_dict()))
+            just_succeeded_connecting = False
         if not trying_destination:
             print("new batch, time= ", current_time - start_time)
             # I use a batch so that the algorithm can be iterative
@@ -90,12 +92,13 @@ def generate_path(path, robots, obstacles, destination):
                                    double_width_square_arrangement, double_width_square_point_locator):
                 if trying_destination and not steered:
                     connected_to_destination = True
+                    just_succeeded_connecting = True
                     print("Successfully found a path to the destination!")
                 # Look for best neighbor:
                 neighborhood = find_neighborhood(robot_num, tree, new_points, steered_point, FT(steer_eta))
                 new_points.append(steered_point)
                 vertices.append(steered_point)
-                new_node = RRT_Node(steered_point, robot_num)
+                new_node = RRT_Node(steered_point)
                 if nearest_point in neighborhood:  # make sure that nearest_point is first
                     neighborhood.remove(nearest_point)
                 neighborhood.insert(0, nearest_point)
@@ -126,4 +129,8 @@ def generate_path(path, robots, obstacles, destination):
     for sample in samples:
         print(str(sample[0]).ljust(20, '0'),
               '\t',
-              str(sample[1]).ljust(8, '0'))
+              str(sample[1]).ljust(8, '0'),
+              '\t',
+              '\t'.join([str(RRT_Node.costs[cost].extract_value(sample[1][cost]))
+                         for cost in RRT_Node.costs.keys()
+                         if RRT_Node.costs[cost].weight > 0]))

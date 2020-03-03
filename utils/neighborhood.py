@@ -20,7 +20,7 @@ def get_nearest(robot_num, tree, new_points, rand):
     if len(new_points) == 0:
         return nn_in_tree[0]
     # check distance from new points
-    dist = [distance_squared(robot_num, rand, point) for point in new_points]
+    dist = [distance_squared(rand, point) for point in new_points]
     min_dist = dist[0]
     min_i = 0
     for i in range(len(new_points)):
@@ -43,6 +43,6 @@ def find_neighborhood(robot_num, tree, new_points, sphere_center, eta):
     res = []
     tree.search(sphere, res)
     for point in new_points:
-        if distance_squared(robot_num, sphere_center, point) <= r * r:
+        if distance_squared(sphere_center, point) <= r * r:
             res.append(point)
     return res
