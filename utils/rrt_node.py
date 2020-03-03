@@ -31,12 +31,13 @@ class RRT_Node(object):
                                                                                              current.point),
                                     lambda my_val, parent_val: max(my_val, parent_val)
                                     ),
-        "turn_angle": RRT_Cost(weight_turn_angle,
-                               lambda current, parent: calc_angle_transformed(None if parent.parent is None else
-                                                                              parent.parent.point,
-                                                                              parent.point, current.point),
-                               lambda my_val, parent_val: max(my_val, parent_val)
-                               )
+        "turn_angle_max": RRT_Cost(weight_turn_angle_max,
+                                   lambda current, parent: calc_angles(None if parent.parent is None else
+                                                                       parent.parent.point,
+                                                                       parent.point, current.point),
+                                   lambda my_val, parent_val: [max(pair) for pair in zip(my_val, parent_val)],
+                                   lambda max_angles: max(max_angles)
+                                   )
     }
 
     def __init__(self, pt, pr=None):

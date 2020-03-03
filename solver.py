@@ -75,7 +75,7 @@ def generate_path(path, robots, obstacles, destination):
                 trying_destination = True
             else:
                 destination_node = graph[destination_point]
-                samples.append((current_time-start_time, destination_node.path_to_origin_values_dict()))
+                samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
             just_succeeded_connecting = False
         if not trying_destination:
             print("new batch, time= ", current_time - start_time)
@@ -114,7 +114,7 @@ def generate_path(path, robots, obstacles, destination):
                 for neighbor in neighborhood_values.keys():  # Only neighbors with free paths were added
                     if neighbor == best_neighbor:
                         continue
-                    if neighborhood_values[neighbor][1] >\
+                    if neighborhood_values[neighbor][1] > \
                             graph[neighbor].path_to_origin_through_target_values(new_node)[0]:
                         graph[neighbor].set_parent(new_node)
         # this in in-efficient if this becomes a bottleneck we should hold an array of kd-trees
