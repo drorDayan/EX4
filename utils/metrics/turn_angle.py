@@ -11,10 +11,10 @@ def calc_angle_2d(p0, p1, p2):
 
 
 def calc_angles(p0, p1, p2):
-    assert(None not in (p1, p2) and p1.dimension() == p2.dimension())
+    assert (None not in (p1, p2) and p1.dimension() == p2.dimension())
     if p0 is None:
         return [FT(0)] * p1.dimension()
-    assert(p0.dimension() == p1.dimension())
+    assert (p0.dimension() == p1.dimension())
     return [FT(calc_angle_2d(Point_d(2, [p0[2 * i], p0[2 * i + 1]]),
                              Point_d(2, [p1[2 * i], p1[2 * i + 1]]),
                              Point_d(2, [p2[2 * i], p2[2 * i + 1]])))

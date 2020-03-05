@@ -43,6 +43,7 @@ class RRT_Node(object):
     def __init__(self, pt, pr=None):
         self.point = pt
         self.parent = pr
+        self.sons = []
 
         self.has_metric = False
         for metric in self.costs.keys():
@@ -53,7 +54,10 @@ class RRT_Node(object):
             self.values = self.segment_to_target_values_dict(self.parent)
 
     def set_parent(self, new_parent):
+        if self.parent is not None:
+            self.parent.sons.remove(self)
         self.parent = new_parent
+        self.parent.sons.append(self)
         if self.has_metric:
             self.values = self.segment_to_target_values_dict(new_parent)
 
