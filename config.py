@@ -13,6 +13,3 @@ exit_on_success = False
 k_nearest = 10
 steer_eta = 0.6
 num_of_points_in_batch = 1200
-
-# Miscellaneous:
-FREESPACE = 'freespace'

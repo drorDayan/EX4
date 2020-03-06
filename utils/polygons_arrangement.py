@@ -1,6 +1,5 @@
 from arr2_epec_seg_ex import *
-from config import FREESPACE
-
+FREESPACE = 'freespace'
 
 def polygon_with_holes_to_arrangement(poly):
     assert isinstance(poly, Polygon_with_holes_2)
