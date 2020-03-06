@@ -46,7 +46,7 @@ def generate_path(path, robots, obstacles, destination):
         if exit_on_success and connected_to_destination:
             break
         current_time = time.time()
-        if current_time - start_time >= seconds_to_run and not continue_until_success:
+        if current_time - start_time >= seconds_to_run and not connected_to_destination and not continue_until_success:
             break
 
         trying_destination = False
