@@ -8,9 +8,9 @@ from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
                           QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
                           QParallelAnimationGroup, QPauseAnimation, Qt)
 
-from gui.RPolygon import RPolygon
-from gui.RDisc import RDisc
-from gui.RSegment import RSegment
+from utils.made_by_staff.gui.RPolygon import RPolygon
+from utils.made_by_staff.gui.RDisc import RDisc
+from utils.made_by_staff.gui.RSegment import RSegment
 
 class MainWindowPlus(QtWidgets.QMainWindow):
   def __init__(self, gui):
