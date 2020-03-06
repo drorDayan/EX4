@@ -34,7 +34,7 @@ def get_nearest(robot_num, tree, new_points, rand):
 
 def find_neighborhood(robot_num, tree, new_points, sphere_center, eta):
     n = len(new_points) + tree.size()
-    r = min(FT(3*(log2(n)/n)**(1/(2*robot_num+1))),
+    r = min(FT(3*(8*log2(n)/n)**(1/(2*robot_num+1))),
             eta)
 
     # Circle centered at arg0 with radius of arg1 and epsilon set to arg2

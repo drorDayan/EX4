@@ -11,5 +11,5 @@ seconds_per_sample = 10
 exit_on_success = False
 # Algorithm Variables:
 k_nearest = 10
-steer_eta = 0.6
+steer_eta = 1.0  # 0.6
 num_of_points_in_batch = 1200
