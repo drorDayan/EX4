@@ -58,7 +58,8 @@ def generate_path(path, robots, obstacles, destination):
                 trying_destination = True
             else:
                 destination_node = graph[destination_point]
-                samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
+                if output_samples:
+                    samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
             just_succeeded_connecting = False
         if not trying_destination:
             print("new batch, time= ", current_time - start_time)
@@ -106,22 +107,24 @@ def generate_path(path, robots, obstacles, destination):
         print("vertices amount: ", len(vertices))
     if connected_to_destination:
         destination_node = graph[destination_point]
-        samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
         d_path = []
         destination_node.get_path_to_here(d_path)
         for dp in d_path:
             path.append([Point_2(dp[2 * i], dp[2 * i + 1]) for i in range(robot_num)])
-        print("finished, time= ", time.time() - start_time, "vertices amount: ", len(vertices), "steer_eta = ",
-              steer_eta)
-        with open(str(int(time.time())) + '.txt', 'w') as f:
-            f.writelines(['\t'.join([str(sample[0]).ljust(20, '0'),
-                                     str(sample[1]).ljust(8, '0'),
-                                     '\t'.join([str(RRT_Node.costs[cost].extract_value(sample[1][cost]))
-                                                for cost in RRT_Node.costs.keys()
-                                                if RRT_Node.costs[cost].weight > 0]
-                                               )
-                                     ]
-                                    ) + '\n'
-                          for sample in samples
-                          ]
-                         )
+        print("finished, time= ", time.time() - start_time,
+              "vertices amount: ", len(vertices),
+              "steer_eta = ", steer_eta)
+        if output_samples:
+            samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
+            with open(str(int(time.time())) + '.txt', 'w') as f:
+                f.writelines(['\t'.join([str(sample[0]).ljust(20, '0'),
+                                         str(sample[1]).ljust(8, '0'),
+                                         '\t'.join([str(RRT_Node.costs[cost].extract_value(sample[1][cost]))
+                                                    for cost in RRT_Node.costs.keys()
+                                                    if RRT_Node.costs[cost].weight > 0]
+                                                   )
+                                         ]
+                                        ) + '\n'
+                              for sample in samples
+                              ]
+                             )

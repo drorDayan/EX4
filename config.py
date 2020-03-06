@@ -8,8 +8,9 @@ weight_turn_angle_max = 0  # Experimental, not working as intended...
 # Running time:
 seconds_to_run = 60
 seconds_between_samples = 10
-exit_on_success = True          # If set to True, will not try to optimize further once a path has been found
-continue_until_success = True   # If set to True, will not quit if seconds_to_run seconds have passed
+output_samples = True           # If set to True, will generate a file with the sampling results at the end of the run.
+exit_on_success = True          # If set to True, will not try to optimize further once a path has been found.
+continue_until_success = True   # If set to True, will not quit if seconds_to_run seconds have passed.
 
 # Algorithm Variables:
 k_nearest = 10
