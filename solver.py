@@ -116,7 +116,7 @@ def generate_path(path, robots, obstacles, destination):
               "steer_eta = ", steer_eta)
         if output_samples:
             samples.append((current_time - start_time, destination_node.path_to_origin_values_dict()))
-            with open(str(int(time.time())) + '.txt', 'w') as f:
+            with open("stats_" + str(int(time.time())) + '.txt', 'w') as f:
                 f.writelines(['\t'.join([str(sample[0]).ljust(20, '0'),
                                          str(sample[1]).ljust(8, '0'),
                                          '\t'.join([str(RRT_Node.costs[cost].extract_value(sample[1][cost]))
