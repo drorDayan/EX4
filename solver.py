@@ -1,33 +1,15 @@
 import time
-from utils.rrt_node import *
-from config import *
-from utils.polygons_arrangement import *
-from utils.collision_detection import *
-from utils.neighborhood import *
-from utils.point_factory import *
 from utils.scene_data import *
+from utils.polygons_arrangement import *
+from utils.point_factory import *
+from utils.collision_detection import *
+from utils.steer import *
+from utils.rrt_node import *
+from utils.neighborhood import *
+from config import *
 
 
 # Code: #
-
-
-def steer(robot_num, near, rand, eta):
-    dist = FT(sqrt(distance_squared(near, rand).to_double()))
-    if dist < eta:
-        return rand, False
-    else:
-        return Point_d(2 * robot_num, [near[i] + (rand[i] - near[i]) * eta / dist for i in range(2 * robot_num)]), True
-
-
-def try_connect_to_dest(graph, point_locator, robot_num, tree, dest_point, arrangement, double_width_square_arrangement,
-                        double_width_square_point_locator):
-    nn = k_nn(tree, k_nearest, dest_point, FT(0))
-    for neighbor in nn:
-        if path_collision_free(robot_num, neighbor[0], dest_point, arrangement, double_width_square_arrangement,
-                               double_width_square_point_locator):
-            graph[dest_point] = RRT_Node(dest_point, graph[neighbor[0]])
-            return True
-    return False
 
 
 def generate_path(path, robots, obstacles, destination):
@@ -44,7 +26,6 @@ def generate_path(path, robots, obstacles, destination):
     c_space_obstacles = [minkowski_sum_by_full_convolution_2(one_width_square, obs) for obs in inflated_obstacles]
     c_space_arrangements = [polygon_with_holes_to_arrangement(obs) for obs in c_space_obstacles]
     obstacles_arrangement = overlay_multiple_arrangements(c_space_arrangements, merge_faces_by_freespace_flag)
-    obstacles_point_locator = Arr_trapezoid_ric_point_location(obstacles_arrangement)
     double_width_square_arrangement = polygon_with_holes_to_arrangement(double_width_square)
     double_width_square_point_locator = Arr_trapezoid_ric_point_location(double_width_square_arrangement)
 
@@ -130,7 +111,8 @@ def generate_path(path, robots, obstacles, destination):
         destination_node.get_path_to_here(d_path)
         for dp in d_path:
             path.append([Point_2(dp[2 * i], dp[2 * i + 1]) for i in range(robot_num)])
-        print("finished, time= ", time.time() - start_time, "vertices amount: ", len(vertices), "steer_eta = ", steer_eta)
+        print("finished, time= ", time.time() - start_time, "vertices amount: ", len(vertices), "steer_eta = ",
+              steer_eta)
         with open(str(int(time.time())) + '.txt', 'w') as f:
             f.writelines(['\t'.join([str(sample[0]).ljust(20, '0'),
                                      str(sample[1]).ljust(8, '0'),

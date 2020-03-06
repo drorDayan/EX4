@@ -33,17 +33,3 @@ def overlay_multiple_arrangements(arrs, face_merge_func):
         overlay(final_arr, arr, temp_res, Arr_face_overlay_traits(face_merge_func))
         final_arr = temp_res
     return final_arr
-
-
-def is_in_free_face(point_locator, point):
-    face = Face()
-    # locate can return a vertex or an edge or a face
-    located_obj = point_locator.locate(point)
-    # if located_obj.is_vertex():
-    #     return False
-    # if located_obj.is_halfedge():
-    #     return False
-    if located_obj.is_face():
-        located_obj.get_face(face)
-        return face.data()[FREESPACE]
-    return False
