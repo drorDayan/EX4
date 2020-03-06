@@ -22,6 +22,10 @@ class RRT_Node(object):
                                   lambda current, parent: distances_squared(parent.point, current.point),
                                   lambda my_val, parent_val: [my_val[i] + parent_val[i] for i in range(len(my_val))],
                                   lambda lengths_list: max(lengths_list)),
+        "distance_pyt": RRT_Cost(weight_distance_pyt,
+                                 lambda current, parent: distances_squared(current.point, parent.point),
+                                 lambda my_val, parent_val: [my_val[i] + parent_val[i] for i in range(len(my_val))],
+                                 lambda lengths_list: FT(sqrt(sum([x*x for x in lengths_list], FT(0)).to_double()))),
         # "distance": RRT_Cost(weight_distance_sum,
         #                      lambda current, parent: distance_squared(parent.point, current.point),
         #                      lambda my_val, parent_val: my_val + parent_val

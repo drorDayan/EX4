@@ -1,6 +1,7 @@
 # Metrics weights:
 weight_distance_sum = 0
 weight_distance_max = 1
+weight_distance_pyt = 0
 weight_robot_clearance_inv = 0
 weight_turn_angle_max = 0  # Not working!!!
 
